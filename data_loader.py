@@ -13,28 +13,20 @@ class RadioMLDataLoader:
         ]
 
     def normalize(self, x):
-        """Diamond Shield: The final word in numerical stability."""
-        # 1. Cast to float32 and scrub non-finite values
+        """Obsidian Shield: Robust Max-Scaling."""
+        # 1. Scrub NaNs/Infs
         x = np.nan_to_num(x.astype(np.float32), nan=0.0, posinf=0.0, neginf=0.0)
         
-        # 2. Aggressive Pre-Clip (Protect against huge sums during centering)
-        x = np.clip(x, -100.0, 100.0)
+        # 2. Global Max Scaling (Strict range [-1, 1])
+        # We use axis=(1,2) to get the max absolute value per sample
+        max_val = np.max(np.abs(x), axis=(1, 2), keepdims=True)
+        # Prevent division by zero
+        max_val = np.where(max_val < 1e-8, 1.0, max_val)
         
-        # 3. Center the signal
-        x = x - np.mean(x, axis=1, keepdims=True)
-        
-        # 4. Standardize Variance using MAD (Mean Absolute Deviation)
-        # This avoids squaring entirely, preventing overflow.
-        mad = np.mean(np.abs(x), axis=(1, 2), keepdims=True)
-        # Safety for zero-signal batches
-        mad = np.where(mad < 1e-7, 1.0, mad)
-        x = x / mad
-        
-        # 5. Final Global Safety Clip
-        return np.clip(x, -5.0, 5.0)
+        return x / max_val
 
     def get_generator(self, indices, batch_size=64):
-        """Turbocharged generator with live stats."""
+        """Turbocharged generator with chunked loading."""
         count = 0
         chunk_size = 4096
         
@@ -42,7 +34,7 @@ class RadioMLDataLoader:
             X_ds = f['X']
             Y_ds = f['Y']
             
-            print(f"Opal Vanguard: Titanium Pipe Primed.")
+            print(f"\n[V3.0] Obsidian Pipe Active. Streaming...")
             while True:
                 np.random.shuffle(indices)
                 for i in range(0, len(indices), chunk_size):
@@ -50,6 +42,7 @@ class RadioMLDataLoader:
                     X_chunk = X_ds[chunk_idx]
                     Y_chunk = Y_ds[chunk_idx]
                     
+                    # Shuffle chunk in RAM
                     p = np.random.permutation(len(X_chunk))
                     X_chunk = X_chunk[p]
                     Y_chunk = Y_chunk[p]
@@ -61,23 +54,12 @@ class RadioMLDataLoader:
                         if len(X_batch) < batch_size: continue
                             
                         X_batch = self.normalize(X_batch)
-                        
-                        count += 1
-                        if count % 100 == 0:
-                            print(f"[Batch {count} stats: min={np.min(X_batch):.2f}, max={np.max(X_batch):.2f}]")
-                        
                         yield X_batch, Y_batch
 
     def get_train_val_indices(self, test_size=0.2, seed=42):
-        """Returns indices for training and validation splits without loading X/Y."""
         with h5py.File(self.file_path, 'r') as f:
             n_samples = f['X'].shape[0]
-        
         np.random.seed(seed)
         indices = np.random.permutation(n_samples)
         split = int(n_samples * (1 - test_size))
         return indices[:split], indices[split:]
-
-if __name__ == "__main__":
-    # Placeholder for local testing
-    print("Opal Vanguard: Data Loader initialized. Awaiting 2018.01A dataset.")

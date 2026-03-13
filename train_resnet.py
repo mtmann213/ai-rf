@@ -53,7 +53,7 @@ def main():
         # DOUBLE-CLIP Optimizer: Combines Norm and Value clipping
         optimizer = tf.keras.optimizers.Adam(
             learning_rate=0.00002, 
-            global_clipnorm=1.0,
+            clipnorm=1.0,
             clipvalue=0.1
         )
         loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True)

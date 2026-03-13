@@ -9,20 +9,20 @@ def residual_block(x, filters, kernel_size=3, stride=1):
     x = layers.Conv1D(filters, kernel_size, strides=stride, padding='same', 
                       kernel_initializer='he_uniform',
                       kernel_constraint=tf.keras.constraints.MaxNorm(3))(x)
-    x = layers.LayerNormalization()(x) # Event Horizon: LN instead of BN
+    x = layers.BatchNormalization()(x) # Event Horizon: LN instead of BN
     x = layers.ReLU(max_value=6.0)(x) 
     
     # Second Convolution
     x = layers.Conv1D(filters, kernel_size, strides=1, padding='same', 
                       kernel_initializer='he_uniform',
                       kernel_constraint=tf.keras.constraints.MaxNorm(3))(x)
-    x = layers.LayerNormalization()(x) # Event Horizon: LN instead of BN
+    x = layers.BatchNormalization()(x) # Event Horizon: LN instead of BN
     
     if stride != 1 or shortcut.shape[-1] != filters:
         shortcut = layers.Conv1D(filters, 1, strides=stride, padding='same', 
                                  kernel_initializer='he_uniform',
                                  kernel_constraint=tf.keras.constraints.MaxNorm(3))(shortcut)
-        shortcut = layers.LayerNormalization()(shortcut)
+        shortcut = layers.BatchNormalization()(shortcut)
         
     x = layers.Add()([x, shortcut])
     x = layers.ReLU(max_value=6.0)(x)
@@ -32,14 +32,15 @@ def build_resnet_vanguard(input_shape, num_classes):
     inputs = layers.Input(shape=input_shape)
     l2_reg = regularizers.l2(1e-4)
     
-    # Pre-Stabilizer
-    x = layers.LayerNormalization()(inputs)
+    # Pre-Stabilizer removed: Input already safely bounded by Soft-Clip.
+    # LN on raw I/Q (axis=-1) ruins modulation correlation.
+    x = inputs
     
     # Stem
     x = layers.Conv1D(64, 7, strides=2, padding='same', 
                       kernel_initializer='he_uniform',
                       kernel_constraint=tf.keras.constraints.MaxNorm(3))(x)
-    x = layers.LayerNormalization()(x) # Event Horizon: LN instead of BN
+    x = layers.BatchNormalization()(x) # Event Horizon: LN instead of BN
     x = layers.ReLU(max_value=6.0)(x)
     x = layers.MaxPooling1D(3, strides=2, padding='same')(x)
     

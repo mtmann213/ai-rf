@@ -50,6 +50,9 @@ class RadioMLDataLoader:
                         if len(X_batch) < batch_size: continue
                             
                         X_batch = self.normalize(X_batch)
+                        # Scrub Y to prevent corrupted labels from injecting Infinity into the loss gradient
+                        Y_batch = np.nan_to_num(Y_batch.astype(np.float32), nan=0.0, posinf=1.0, neginf=0.0)
+                        Y_batch = np.clip(Y_batch, 0.0, 1.0)
                         yield X_batch, Y_batch
 
     def get_train_val_indices(self, test_size=0.2, seed=42):

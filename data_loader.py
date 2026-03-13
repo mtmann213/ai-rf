@@ -29,30 +29,47 @@ class RadioMLDataLoader:
         return x_scaled / (norm + 1e-8)
 
     def get_generator(self, indices, batch_size=64):
-        """High-speed generator: opens file once and streams data."""
+        """Turbocharged generator: reads contiguous chunks for maximum speed."""
         count = 0
-        # Open file ONCE at the start of the generator
+        chunk_size = 4096 # Read 4096 samples at a time (Fast contiguous I/O)
+        
         with h5py.File(self.file_path, 'r') as f:
             X_ds = f['X']
             Y_ds = f['Y']
             
-            print(f"Opal Vanguard: Data Pipe Primed. Starting stream...")
+            print(f"Opal Vanguard: Turbocharged Pipe Primed.")
             while True:
+                # To maintain randomness, we shuffle the order of chunks
                 np.random.shuffle(indices)
-                for i in range(0, len(indices), batch_size):
-                    # Sort indices for faster HDF5 contiguous access
-                    batch_idx = sorted(indices[i:i+batch_size])
+                
+                for i in range(0, len(indices), chunk_size):
+                    # Get a chunk of indices and sort them for HDF5 speed
+                    chunk_idx = sorted(indices[i:i+chunk_size])
                     
-                    X_batch = X_ds[batch_idx]
-                    Y_batch = Y_ds[batch_idx]
+                    # Contiguous-ish read
+                    X_chunk = X_ds[chunk_idx]
+                    Y_chunk = Y_ds[chunk_idx]
                     
-                    X_batch = self.normalize(X_batch)
+                    # Shuffle this chunk in RAM to maintain high-quality randomness
+                    p = np.random.permutation(len(X_chunk))
+                    X_chunk = X_chunk[p]
+                    Y_chunk = Y_chunk[p]
                     
-                    count += 1
-                    if count % 10 == 0: # More frequent heartbeat
-                        print(f".", end="", flush=True)
-                    
-                    yield X_batch, Y_batch
+                    # Yield batches from this fast RAM-resident chunk
+                    for j in range(0, len(X_chunk), batch_size):
+                        X_batch = X_chunk[j:j+batch_size]
+                        Y_batch = Y_chunk[j:j+batch_size]
+                        
+                        if len(X_batch) < batch_size:
+                            continue
+                            
+                        X_batch = self.normalize(X_batch)
+                        
+                        count += 1
+                        if count % 10 == 0:
+                            print(f".", end="", flush=True)
+                        
+                        yield X_batch, Y_batch
 
     def get_train_val_indices(self, test_size=0.2, seed=42):
         """Returns indices for training and validation splits without loading X/Y."""

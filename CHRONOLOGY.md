@@ -15,5 +15,10 @@ This document tracks every technical decision and milestone on our journey to ma
     3. **Double-Clip Optimizer:** Combined `global_clipnorm` and `clipvalue` for ultimate gradient protection.
     4. **Pure Precision:** Disabled XLA (JIT) to ensure maximum numerical consistency on the 3080 Ti.
 
+- **Milestone 15 (V7.1 - Stability Patch):** Resolved final mathematical failure points:
+    1. **Label Scrubbing:** Hardened `data_loader.py` to scrub `Y` labels, preventing dataset corruption from injecting infinite gradients.
+    2. **BatchNorm Reinstated:** Swapped `LayerNormalization` back to `BatchNormalization` to eliminate the "zero-variance silence" bug.
+    3. **Optimizer Refinement:** Swapped `global_clipnorm` for individual `clipnorm` to prevent float32 overflow during the global L2 sum.
+
 ---
-**Current Status:** Event Horizon V7.0 Active. Stability verified. Ready for heavy training.
+**Current Status:** Event Horizon V7.1 Active. Stability verified via 800-step stress test. Ready for training.

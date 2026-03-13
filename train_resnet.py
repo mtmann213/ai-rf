@@ -4,12 +4,12 @@ from data_loader import RadioMLDataLoader
 from resnet_opal_vanguard import build_resnet_vanguard
 
 # Configuration
-DATASET_PATH = "GOLD_XYZ_OSC.0001_1024.hdf5"
+DATASET_PATH = "2018_01A/GOLD_XYZ_OSC.0001_1024.hdf5"
 MODEL_SAVE_PATH = "opal_vanguard_resnet_v1.h5"
 INPUT_SHAPE = (1024, 2)
 NUM_CLASSES = 24
-BATCH_SIZE = 64 # ResNet is more memory intensive
-EPOCHS = 10
+BATCH_SIZE = 64 
+EPOCHS = 50 # Increased for real dataset
 
 def main():
     print(f"Opal Vanguard: Training ResNet from local dataset {DATASET_PATH}...")

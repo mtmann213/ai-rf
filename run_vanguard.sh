@@ -4,7 +4,7 @@
 # Explicitly mapping pip-installed NVIDIA libraries to LD_LIBRARY_PATH
 # to ensure TensorFlow 2.21+ can see the Blackwell GPU.
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/dev2/.local/lib/python3.12/site-packages/nvidia/cuda_runtime/lib:/home/dev2/.local/lib/python3.12/site-packages/nvidia/cublas/lib:/home/dev2/.local/lib/python3.12/site-packages/nvidia/cudnn/lib:/home/dev2/.local/lib/python3.12/site-packages/nvidia/nvjitlink/lib:/home/dev2/.local/lib/python3.12/site-packages/nvidia/cuda_nvcc/nvvm/lib64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu:/home/dev2/.local/lib/python3.12/site-packages/nvidia/cuda_runtime/lib:/home/dev2/.local/lib/python3.12/site-packages/nvidia/cublas/lib:/home/dev2/.local/lib/python3.12/site-packages/nvidia/cudnn/lib:/home/dev2/.local/lib/python3.12/site-packages/nvidia/nvjitlink/lib:/home/dev2/.local/lib/python3.12/site-packages/nvidia/cuda_nvcc/nvvm/lib64
 
 echo "--------------------------------------------------"
 echo "Opal Vanguard: Hardware Verification"

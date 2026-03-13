@@ -31,8 +31,11 @@ def build_resnet_vanguard(input_shape, num_classes):
     """
     inputs = layers.Input(shape=input_shape)
     
+    # NEW: Immediate stabilization layer to catch numerical spikes
+    x = layers.BatchNormalization()(inputs)
+    
     # Initial Convolution
-    x = layers.Conv1D(64, 7, strides=2, padding='same')(inputs)
+    x = layers.Conv1D(64, 7, strides=2, padding='same')(x)
     x = layers.BatchNormalization()(x)
     x = layers.Activation('relu')(x)
     x = layers.MaxPooling1D(3, strides=2, padding='same')(x)

@@ -63,11 +63,11 @@ def main():
                     print(f"Resuming from Epoch {initial_epoch}")
             except Exception as e:
                 print(f"Could not read logs for epoch tracking: {e}")
-    else:
         print("No checkpoint found. Building fresh ResNet model...")
         model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
         # Add clipnorm=1.0 as a safety governor to prevent nan gradients
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.00005, clipnorm=1.0), 
+        # Using 2e-5 for ultra-gentle start
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.00002, clipnorm=1.0), 
                       loss='categorical_crossentropy', 
                       metrics=['accuracy'])
     

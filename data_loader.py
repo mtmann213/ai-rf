@@ -13,23 +13,17 @@ class RadioMLDataLoader:
         ]
 
     def normalize(self, x):
-        """Indestructible normalization: scrubs NaNs, clips outliers, and scales."""
-        # 1. Replace NaNs and Infs with 0
+        """Z-Score standardization: ensures mean 0 and unit variance."""
+        # 1. Scrub NaNs and Infs
         x = np.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
         
-        # 2. Clip extreme outliers
-        x = np.clip(x, -1e3, 1e3)
+        # 2. Standardize each sample individually
+        # Calculate mean and std across the time axis (1024 samples)
+        mean = np.mean(x, axis=1, keepdims=True) # [Batch, 1, 2]
+        std = np.std(x, axis=1, keepdims=True)   # [Batch, 1, 2]
         
-        # 3. Scale by max absolute value
-        max_val = np.max(np.abs(x))
-        if max_val < 1e-9:
-            return x # Return as is if signal is basically zero
-            
-        x_scaled = x / max_val
-        
-        # 4. Final L2 normalization
-        norm = np.linalg.norm(x_scaled, axis=-1, keepdims=True)
-        return x_scaled / (norm + 1e-8)
+        # 3. Apply formula: (x - mean) / std
+        return (x - mean) / (std + 1e-8)
 
     def get_generator(self, indices, batch_size=64):
         """Turbocharged generator: reads contiguous chunks for maximum speed."""

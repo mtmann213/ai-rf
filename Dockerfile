@@ -8,19 +8,25 @@ ENV PYTHONUNBUFFERED 1
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
+    libhdf5-to-json \
     libhdf5-dev \
-    python3-pip \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Upgrade pip and install Python dependencies
+# Robust Pip Installation (Nuclear Option)
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3 get-pip.py && \
+    rm get-pip.py
+
+# Install Python dependencies
 COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir --upgrade pip && \
     python3 -m pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
+# Copy the rest of the application (minus things in .dockerignore)
 COPY . .
 
 # Default command

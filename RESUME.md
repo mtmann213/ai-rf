@@ -1,51 +1,38 @@
 # Opal Vanguard: Mission Resume & Handoff
 
-**Status:** Phase 3 IN PROGRESS | Awaiting 50-epoch completion on RTX 3080 Ti.
+**Current Baseline:** V7.0 Event Horizon (Safe-Mode)
+**Status:** Architecture finalized for absolute stability. Ready for heavy training on RTX 3080 Ti.
 
 ---
 
-## 1. Active File Map
-*   `data_loader.py`: **The Engine.** Handles HDF5 streaming, normalization, and chunking.
-*   `train_resnet.py`: **The Pilot.** Main training script with resumability.
-*   `resnet_opal_vanguard.py`: **The Vessel.** Defines the 1D-ResNet architecture.
-*   `DOCKER_GUIDE.md`: **The Manual.** How to run on the 3080 Ti desktop.
+## 1. Restart Sequence (Desktop/3080 Ti)
+To pick up exactly where we left off with the most stable code:
 
-## 2. Desktop (RTX 3080 Ti) Commands
-Use these commands on your Windows Desktop (WSL2) to restart the heavy training:
 ```bash
-# Update the code
-git pull origin main
+# 1. HARD RESET (Force match GitHub)
+git fetch origin main
+git reset --hard origin/main
 
-# Start the container (Builds if necessary)
+# 2. SCORCH WIPE (Clear all mathematical poison)
+sudo rm -f *.keras *.csv *.h5
+
+# 3. IGNITE
 sudo docker compose up --build -d
 
-# Watch the progress (Look for 'Heartbeat Dots')
+# 4. VERIFY
 sudo docker logs -f opal-vanguard-receiver
+# Check for: "[V7.0] Event Horizon Engine Engaged."
 ```
 
-## 3. Laptop (RTX Blackwell) Commands
-Use these for development or small-scale testing:
-```bash
-# Fix library paths for local Python
-./run_vanguard.sh
-```
+## 2. Active File Map
+*   `data_loader.py`: **V7.0 Engine.** Uses Soft-Clip `x/(1+|x|)` scaling for absolute stability.
+*   `resnet_opal_vanguard.py`: **V7.0 Vessel.** 1D-ResNet with strictly batch-independent `LayerNormalization`.
+*   `train_resnet.py`: **V7.0 Pilot.** Double-clip optimizer with XLA disabled for precision.
 
-## 4. Troubleshooting: GPU Fix (WSL2)
-If Docker doesn't see the 3080 Ti, run this in your Desktop terminal:
-```bash
-sudo tee /etc/docker/daemon.json <<EOF
-{
-    "runtimes": {
-        "nvidia": {
-            "path": "nvidia-container-runtime",
-            "runtimeArgs": []
-        }
-    }
-}
-EOF
-sudo service docker restart
-```
+## 3. Mission Milestones
+*   **Next Goal:** Complete 50 Epochs on the 2018.01A dataset.
+*   **Success Indicator:** Loss starts at ~3.17 and smoothly decreases; accuracy climbs beyond 5%.
 
 ---
 **Tech Lead:** Mike Mann
-**Diary Reference:** See `CHRONOLOGY.md` for the technical history.
+**Diary Reference:** See `CHRONOLOGY.md` for the technical history of our stability pivots.

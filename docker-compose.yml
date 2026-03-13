@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  opal-vanguard:
+    build: .
+    container_name: opal-vanguard-receiver
+    volumes:
+      - .:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true
+    command: python3 train_resnet.py

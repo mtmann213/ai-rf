@@ -1,4 +1,5 @@
 import os
+import sys
 import tensorflow as tf
 from data_loader import RadioMLDataLoader
 from resnet_opal_vanguard import build_resnet_vanguard
@@ -14,9 +15,18 @@ EPOCHS = 50 # Increased for real dataset
 def main():
     print(f"Opal Vanguard: Training ResNet from local dataset {DATASET_PATH} (Streaming Mode)...")
     
+    # Check if dataset exists
+    if not os.path.exists(DATASET_PATH):
+        print(f"CRITICAL ERROR: Dataset not found at {DATASET_PATH}")
+        print("Please ensure the 2018_01A folder is inside the project directory.")
+        return
+
     # 1. Initialize Loader & Get Indices
     loader = RadioMLDataLoader(DATASET_PATH)
     train_indices, val_indices = loader.get_train_val_indices()
+    
+    print(f"Found {len(train_indices)} training samples and {len(val_indices)} validation samples.")
+    sys.stdout.flush()
     
     # 2. Build tf.data Datasets
     train_dataset = tf.data.Dataset.from_generator(

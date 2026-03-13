@@ -13,13 +13,16 @@ class RadioMLDataLoader:
         ]
 
     def normalize(self, x):
-        """Ultra-stable normalization for extreme RF signals."""
-        # 1. Scale down by the maximum value in the batch to prevent squaring overflows
-        # This keeps the math within a safe floating-point range
+        """Extreme robustness normalization for RadioML 2018.01A."""
+        # 1. Clip extreme outliers (3 standard deviations is usually safe for RF)
+        # This prevents 'inf' or 'nan' during math operations
+        x = np.clip(x, -1e3, 1e3)
+        
+        # 2. Scale by the max absolute value in the batch
         max_val = np.max(np.abs(x)) + 1e-8
         x_scaled = x / max_val
         
-        # 2. Now calculate the L2 norm safely
+        # 3. Final L2 normalization
         norm = np.linalg.norm(x_scaled, axis=-1, keepdims=True)
         return x_scaled / (norm + 1e-8)
 

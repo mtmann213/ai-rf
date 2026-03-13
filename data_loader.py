@@ -12,8 +12,15 @@ class RadioMLDataLoader:
             'FM', 'GMSK', 'OQPSK'
         ]
 
+    def normalize(self, x):
+        """Simple L2 normalization for I/Q samples."""
+        # Calculate energy per sample [Batch, 1024, 1]
+        p = np.sqrt(np.sum(np.power(x, 2), axis=-1, keepdims=True))
+        # Avoid division by zero
+        return x / (p + 1e-8)
+
     def get_generator(self, indices, batch_size=64):
-        """Streams data from the HDF5 file in batches."""
+        """Streams normalized data from the HDF5 file in batches."""
         while True:
             np.random.shuffle(indices)
             for i in range(0, len(indices), batch_size):
@@ -21,6 +28,9 @@ class RadioMLDataLoader:
                 with h5py.File(self.file_path, 'r') as f:
                     X_batch = f['X'][batch_idx]
                     Y_batch = f['Y'][batch_idx]
+                
+                # Apply normalization
+                X_batch = self.normalize(X_batch)
                 yield X_batch, Y_batch
 
     def get_train_val_indices(self, test_size=0.2, seed=42):

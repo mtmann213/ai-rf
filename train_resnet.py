@@ -56,15 +56,15 @@ def main():
     else:
         print("No checkpoint found. Building fresh ResNet model...")
         model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
-        model.compile(optimizer='adam', 
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), 
                       loss='categorical_crossentropy', 
                       metrics=['accuracy'])
     
     # 4. Callbacks
     callbacks = [
         tf.keras.callbacks.EarlyStopping(patience=5, restore_best_weights=True),
-        # Save every 500 steps so we don't lose mid-epoch progress
-        tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_best_only=True, save_freq=500),
+        # Save at end of epoch to ensure val_loss is available
+        tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_best_only=True),
         tf.keras.callbacks.CSVLogger(log_path, append=True)
     ]
     

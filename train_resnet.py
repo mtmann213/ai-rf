@@ -68,7 +68,7 @@ def main():
         # Add clipnorm=1.0 as a safety governor to prevent nan gradients
         # Using 2e-5 for ultra-gentle start
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.00002, clipnorm=1.0), 
-                      loss='categorical_crossentropy', 
+                      loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True), 
                       metrics=['accuracy'])
     
     # 4. Callbacks

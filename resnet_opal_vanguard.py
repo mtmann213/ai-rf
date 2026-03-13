@@ -8,17 +8,17 @@ def residual_block(x, filters, kernel_size=3, stride=1):
     shortcut = x
     
     # First Convolution
-    x = layers.Conv1D(filters, kernel_size, strides=stride, padding='same')(x)
+    x = layers.Conv1D(filters, kernel_size, strides=stride, padding='same', kernel_initializer='he_normal')(x)
     x = layers.BatchNormalization()(x)
     x = layers.Activation('relu')(x)
     
     # Second Convolution
-    x = layers.Conv1D(filters, kernel_size, strides=1, padding='same')(x)
+    x = layers.Conv1D(filters, kernel_size, strides=1, padding='same', kernel_initializer='he_normal')(x)
     x = layers.BatchNormalization()(x)
     
     # Adjust shortcut if dimensions changed
     if stride != 1 or shortcut.shape[-1] != filters:
-        shortcut = layers.Conv1D(filters, 1, strides=stride, padding='same')(shortcut)
+        shortcut = layers.Conv1D(filters, 1, strides=stride, padding='same', kernel_initializer='he_normal')(shortcut)
         shortcut = layers.BatchNormalization()(shortcut)
         
     x = layers.Add()([x, shortcut])
@@ -35,7 +35,7 @@ def build_resnet_vanguard(input_shape, num_classes):
     x = layers.BatchNormalization()(inputs)
     
     # Initial Convolution
-    x = layers.Conv1D(64, 7, strides=2, padding='same')(x)
+    x = layers.Conv1D(64, 7, strides=2, padding='same', kernel_initializer='he_normal')(x)
     x = layers.BatchNormalization()(x)
     x = layers.Activation('relu')(x)
     x = layers.MaxPooling1D(3, strides=2, padding='same')(x)
@@ -52,9 +52,12 @@ def build_resnet_vanguard(input_shape, num_classes):
     
     # Final Classification Head
     x = layers.GlobalAveragePooling1D()(x)
-    x = layers.Dense(512, activation='relu')(x)
+    x = layers.Dense(512, activation='relu', kernel_initializer='he_normal')(x)
     x = layers.Dropout(0.5)(x)
-    outputs = layers.Dense(num_classes, activation='softmax')(x)
+    
+    # OUTPUT RAW LOGITS (No Softmax here!)
+    # Softmax will be handled safely inside the loss function
+    outputs = layers.Dense(num_classes, kernel_initializer='he_normal')(x)
     
     model = models.Model(inputs=inputs, outputs=outputs, name="OpalVanguard_ResNet")
     return model

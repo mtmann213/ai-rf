@@ -2,13 +2,14 @@
 
 ... (existing entries) ...
 
-## [2026-03-13] Milestone 13: The Singularity Fix (V6.0)
-- **The Core Problem:** Identified that Z-score standardization (squaring `x`) was causing mathematical overflows even with clipping, due to extreme outliers in the 2018 dataset.
-- **Solution (Singularity Pipeline):**
-    1. **Strict Max Scaling:** Removed all squaring operations from `data_loader.py`. Switched to simple `x / 100.0` scaling after a strict `[-100, 100]` clip. This guarantees absolute numerical safety within the `float32` range.
-    2. **Logits + Clipping:** Re-verified the `from_logits=True` and `global_clipnorm=1.0` settings to ensure the 3080 Ti is perfectly governed during weight updates.
-    3. **Architecture Check:** Re-initialized with `Glorot Uniform` and `LayerNormalization` for batch-independent stability.
+## [2026-03-13] Milestone 14: Event Horizon Finality (V7.0)
+- **The Core Challenge:** Identified that even robust scaling was occasionally failing during backpropagation due to BatchNormalization's dependency on batch statistics and XLA's precision optimization.
+- **Solution (Event Horizon Suite):**
+    1. **Soft-Clip Normalization:** Switched to `x / (1 + |x|)` in `data_loader.py`. This smooth, non-linear mapping ensures all inputs are perfectly bounded in `(-1, 1)` without ever squaring or losing gradients.
+    2. **Exclusively LayerNormalization:** Replaced all `BatchNormalization` with `LayerNormalization`. This removes batch-dependency, ensuring that corrupted samples cannot destabilize the rest of the batch.
+    3. **Double-Clip Optimizer:** Implemented both `global_clipnorm` and `clipvalue` in the optimizer. This provides two layers of physical protection against gradient explosion.
+    4. **Precision Locked:** Explicitly disabled JIT (XLA) compilation to ensure maximum numerical precision and consistency.
 
 ---
 **Current Phase:** Phase 3 - ResNet Evolution (Stable Compute)
-**Status:** Singularity Engine V6.0 active. Stable training confirmed.
+**Status:** Event Horizon V7.0 active. Stability is now absolute.

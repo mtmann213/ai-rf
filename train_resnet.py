@@ -4,19 +4,16 @@ import tensorflow as tf
 from data_loader import RadioMLDataLoader
 from resnet_opal_vanguard import build_resnet_vanguard
 
-# V6.0: Absolute Stability Controls
-tf.config.optimizer.set_jit(False)
-
 # Configuration
 DATASET_PATH = "2018_01A/GOLD_XYZ_OSC.0001_1024.hdf5"
-MODEL_SAVE_PATH = "opal_vanguard_resnet_v6.h5"
+MODEL_SAVE_PATH = "opal_vanguard_resnet_v7.h5"
 INPUT_SHAPE = (1024, 2)
 NUM_CLASSES = 24
 BATCH_SIZE = 64 
 EPOCHS = 50 
 
 def main():
-    print(f"\n[V6.0] Singularity Engine Engaged. Absolute Stability Active.")
+    print(f"\n[V7.0] Event Horizon Engine Engaged. Safe-Mode Active.")
     
     if not os.path.exists(DATASET_PATH):
         print(f"CRITICAL: Dataset missing at {DATASET_PATH}")
@@ -44,27 +41,35 @@ def main():
     ).prefetch(tf.data.AUTOTUNE)
     
     # 3. Model
-    checkpoint_path = 'best_resnet_v6.keras'
+    checkpoint_path = 'best_resnet_v7.keras'
+    initial_epoch = 0
     
     if os.path.exists(checkpoint_path):
-        print(f"Resuming V6 from checkpoint: {checkpoint_path}")
+        print(f"Resuming V7 from checkpoint: {checkpoint_path}")
         model = tf.keras.models.load_model(checkpoint_path)
     else:
-        print("Building fresh Singularity ResNet...")
+        print("Building fresh Event Horizon ResNet...")
         model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
-        optimizer = tf.keras.optimizers.Adam(learning_rate=0.00002, global_clipnorm=1.0)
-        loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True, label_smoothing=0.1)
-        model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'])
+        # DOUBLE-CLIP Optimizer: Combines Norm and Value clipping
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=0.00002, 
+            global_clipnorm=1.0,
+            clipvalue=0.1
+        )
+        loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+        
+        # Explicitly disable JIT (XLA) inside compile
+        model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'], jit_compile=False)
     
     # 4. Callbacks
     callbacks = [
         tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True),
         tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_best_only=True),
-        tf.keras.callbacks.CSVLogger('training_log_v6.csv', append=True)
+        tf.keras.callbacks.CSVLogger('training_log_v7.csv', append=True)
     ]
     
     # 5. Ignite
-    print(f"--- Launching Singularity V6.0 ---")
+    print(f"--- Launching Event Horizon mission ---")
     sys.stdout.flush()
     
     steps = len(train_indices) // BATCH_SIZE

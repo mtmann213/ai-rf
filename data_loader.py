@@ -13,19 +13,17 @@ class RadioMLDataLoader:
         ]
 
     def normalize(self, x):
-        """Singularity Scaling: Absolute stability via Log-Sigmoid."""
-        # 1. Immediate scrubbing of non-finite values
+        """Event Horizon: Soft-clipping for absolute gradient stability."""
+        # 1. Scrub non-finite values
         x = np.nan_to_num(x.astype(np.float32), nan=0.0, posinf=0.0, neginf=0.0)
         
-        # 2. Strict Pre-Clip (ADC saturation limit)
-        x = np.clip(x, -100.0, 100.0)
-        
-        # 3. Simple Min-Max Scaling (No squaring allowed!)
-        # Map [-100, 100] to [-1, 1]
-        return x / 100.0
+        # 2. Soft-Scaling (x / (1 + |x|))
+        # This maps the entire number line to (-1, 1) smoothly.
+        # It is much more stable than hard clipping for backpropagation.
+        return x / (1.0 + np.abs(x))
 
     def get_generator(self, indices, batch_size=64):
-        """Turbocharged generator V6.0."""
+        """Turbocharged generator V7.0."""
         count = 0
         chunk_size = 4096
         
@@ -33,7 +31,7 @@ class RadioMLDataLoader:
             X_ds = f['X']
             Y_ds = f['Y']
             
-            print(f"\n[V6.0] Singularity Engine Active. Absolute Stability engaged.")
+            print(f"\n[V7.0] Event Horizon Engine Active. Soft-clipping engaged.")
             while True:
                 np.random.shuffle(indices)
                 for i in range(0, len(indices), chunk_size):
@@ -52,11 +50,6 @@ class RadioMLDataLoader:
                         if len(X_batch) < batch_size: continue
                             
                         X_batch = self.normalize(X_batch)
-                        
-                        # Final Safety Check: Ensure NO nans in the batch
-                        if np.any(np.isnan(X_batch)):
-                            X_batch = np.nan_to_num(X_batch)
-                            
                         yield X_batch, Y_batch
 
     def get_train_val_indices(self, test_size=0.2, seed=42):

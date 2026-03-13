@@ -34,5 +34,5 @@ This document outlines the evolutionary path from a synthetic Sionna baseline to
 - [ ] **Milestone 5.3:** Live Over-the-Air (OTA) Validation using USRP/HackRF hardware.
 
 ---
-**Lead SDR Architect:** Mike Mann (LT COL, USAF)
+**Lead SDR Architect:** Mike Mann
 **Project Status:** Phase 1 - In Progress

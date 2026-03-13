@@ -66,7 +66,8 @@ def main():
     else:
         print("No checkpoint found. Building fresh ResNet model...")
         model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), 
+        # Add clipnorm=1.0 as a safety governor to prevent nan gradients
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.00005, clipnorm=1.0), 
                       loss='categorical_crossentropy', 
                       metrics=['accuracy'])
     

@@ -9,15 +9,16 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update && apt-get install -y \
     git \
     libhdf5-dev \
-    python3-venv \
+    python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Install Python dependencies
+# Upgrade pip and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python3 -m pip install --no-cache-dir --upgrade pip && \
+    python3 -m pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
 COPY . .

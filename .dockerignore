@@ -1,0 +1,10 @@
+2018_01A/
+*.hdf5
+*.keras
+*.h5
+venv/
+__pycache__/
+.git/
+training_log.csv
+accuracy_vs_snr.png
+confusion_matrix_20dB.png

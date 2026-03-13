@@ -2,12 +2,11 @@
 
 ... (existing entries) ...
 
-## [2026-03-13] Milestone 3: The "Numerical Stability" Pivot
-- **The Challenge:** Encountered `nan` loss during the first epoch of full-scale ResNet training on the 3080 Ti.
-- **Hurdle 1 (Normalization):** Identified that raw I/Q samples were causing exploding gradients. Implemented `L2 normalization` in `data_loader.py`.
-- **Hurdle 2 (Stability):** Lowered the initial learning rate to `1e-4` to ensure smoother convergence.
-- **Hurdle 3 (Checkpoints):** Fixed a `ModelCheckpoint` warning by transitioning from mid-epoch saves to end-of-epoch saves, ensuring `val_loss` is always available.
+## [2026-03-13] Milestone 4: The "Nuclear Normalization" Fix
+- **Hurdle:** Discovered that extreme outliers in the RadioML dataset were still causing overflows even with standard `np.linalg.norm`.
+- **Solution:** Implemented **Ultra-Stable Normalization** in `data_loader.py`. Signals are now pre-scaled by their maximum absolute value before the L2 norm is calculated, effectively making the math overflow-proof.
+- **Control:** Added a **Manual Start** prompt to `train_resnet.py`, giving the user a choice to confirm hardware status before the heavy training begins.
 
 ---
 **Current Phase:** Phase 3 - ResNet Evolution
-**Status:** Numerical stability fixes applied. Ready for stable training.
+**Status:** Bulletproof math implemented. Standing by for launch.

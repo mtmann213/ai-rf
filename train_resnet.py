@@ -67,14 +67,19 @@ def main():
         tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_best_only=True),
         tf.keras.callbacks.CSVLogger(log_path, append=True)
     ]
-    
     # 5. Train
     steps_per_epoch = len(train_indices) // BATCH_SIZE
     validation_steps = len(val_indices) // BATCH_SIZE
 
     print(f"\n--- Phase 3: Training ResNet on Full RadioML Dataset ---")
+    print(f"Dataset: {DATASET_PATH}")
+    print(f"Batch Size: {BATCH_SIZE} | Total Steps: {steps_per_epoch}")
+
+    input("\nOpal Vanguard: Press ENTER to begin training...")
+
     model.fit(train_dataset, 
               epochs=EPOCHS, 
+    ...
               initial_epoch=initial_epoch,
               steps_per_epoch=steps_per_epoch,
               validation_data=val_dataset,

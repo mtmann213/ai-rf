@@ -13,11 +13,15 @@ class RadioMLDataLoader:
         ]
 
     def normalize(self, x):
-        """Stable normalization for I/Q samples."""
-        # Calculate L2 norm along the I/Q axis (axis -1)
-        # Using np.linalg.norm is more stable than sqrt(sum(power(2)))
-        norm = np.linalg.norm(x, axis=-1, keepdims=True)
-        return x / (norm + 1e-8)
+        """Ultra-stable normalization for extreme RF signals."""
+        # 1. Scale down by the maximum value in the batch to prevent squaring overflows
+        # This keeps the math within a safe floating-point range
+        max_val = np.max(np.abs(x)) + 1e-8
+        x_scaled = x / max_val
+        
+        # 2. Now calculate the L2 norm safely
+        norm = np.linalg.norm(x_scaled, axis=-1, keepdims=True)
+        return x_scaled / (norm + 1e-8)
 
     def get_generator(self, indices, batch_size=64):
         """Streams normalized data from the HDF5 file in batches."""

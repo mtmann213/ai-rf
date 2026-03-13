@@ -13,21 +13,19 @@ class RadioMLDataLoader:
         ]
 
     def normalize(self, x):
-        """Stellar Scaling: Robust Z-Score + Tanh Squashing."""
-        # 1. Scrub NaNs/Infs
+        """Singularity Scaling: Absolute stability via Log-Sigmoid."""
+        # 1. Immediate scrubbing of non-finite values
         x = np.nan_to_num(x.astype(np.float32), nan=0.0, posinf=0.0, neginf=0.0)
         
-        # 2. Standardize (Mean 0, Std 1) per sample
-        mean = np.mean(x, axis=1, keepdims=True)
-        std = np.std(x, axis=1, keepdims=True) + 1e-8
-        x = (x - mean) / std
+        # 2. Strict Pre-Clip (ADC saturation limit)
+        x = np.clip(x, -100.0, 100.0)
         
-        # 3. Non-linear Squashing (Tanh)
-        # This guarantees every value is in (-1, 1) and compresses outliers
-        return np.tanh(x)
+        # 3. Simple Min-Max Scaling (No squaring allowed!)
+        # Map [-100, 100] to [-1, 1]
+        return x / 100.0
 
     def get_generator(self, indices, batch_size=64):
-        """Turbocharged generator with chunked loading."""
+        """Turbocharged generator V6.0."""
         count = 0
         chunk_size = 4096
         
@@ -35,7 +33,7 @@ class RadioMLDataLoader:
             X_ds = f['X']
             Y_ds = f['Y']
             
-            print(f"\n[V5.0] Stellar Pipe Active. Squashing engaged.")
+            print(f"\n[V6.0] Singularity Engine Active. Absolute Stability engaged.")
             while True:
                 np.random.shuffle(indices)
                 for i in range(0, len(indices), chunk_size):
@@ -43,7 +41,6 @@ class RadioMLDataLoader:
                     X_chunk = X_ds[chunk_idx]
                     Y_chunk = Y_ds[chunk_idx]
                     
-                    # Shuffle chunk in RAM
                     p = np.random.permutation(len(X_chunk))
                     X_chunk = X_chunk[p]
                     Y_chunk = Y_chunk[p]
@@ -55,6 +52,11 @@ class RadioMLDataLoader:
                         if len(X_batch) < batch_size: continue
                             
                         X_batch = self.normalize(X_batch)
+                        
+                        # Final Safety Check: Ensure NO nans in the batch
+                        if np.any(np.isnan(X_batch)):
+                            X_batch = np.nan_to_num(X_batch)
+                            
                         yield X_batch, Y_batch
 
     def get_train_val_indices(self, test_size=0.2, seed=42):

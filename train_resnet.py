@@ -40,19 +40,19 @@ def main():
     checkpoint_path = 'best_resnet.keras'
     log_path = 'training_log.csv'
     
-    if os.path.exists(log_path):
-        try:
-            import pandas as pd
-            log_df = pd.read_csv(log_path)
-            if not log_df.empty:
-                initial_epoch = log_df['epoch'].max() + 1
-                print(f"Resuming from Epoch {initial_epoch} based on {log_path}")
-        except Exception as e:
-            print(f"Could not read logs for epoch tracking: {e}")
-
     if os.path.exists(checkpoint_path):
         print(f"Found existing checkpoint at {checkpoint_path}. Loading model...")
         model = tf.keras.models.load_model(checkpoint_path)
+        # Only resume epoch count if we have the weights
+        if os.path.exists(log_path):
+            try:
+                import pandas as pd
+                log_df = pd.read_csv(log_path)
+                if not log_df.empty:
+                    initial_epoch = log_df['epoch'].max() + 1
+                    print(f"Resuming from Epoch {initial_epoch}")
+            except Exception as e:
+                print(f"Could not read logs for epoch tracking: {e}")
     else:
         print("No checkpoint found. Building fresh ResNet model...")
         model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)

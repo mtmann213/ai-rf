@@ -13,11 +13,11 @@ class RadioMLDataLoader:
         ]
 
     def normalize(self, x):
-        """Simple L2 normalization for I/Q samples."""
-        # Calculate energy per sample [Batch, 1024, 1]
-        p = np.sqrt(np.sum(np.power(x, 2), axis=-1, keepdims=True))
-        # Avoid division by zero
-        return x / (p + 1e-8)
+        """Stable normalization for I/Q samples."""
+        # Calculate L2 norm along the I/Q axis (axis -1)
+        # Using np.linalg.norm is more stable than sqrt(sum(power(2)))
+        norm = np.linalg.norm(x, axis=-1, keepdims=True)
+        return x / (norm + 1e-8)
 
     def get_generator(self, indices, batch_size=64):
         """Streams normalized data from the HDF5 file in batches."""

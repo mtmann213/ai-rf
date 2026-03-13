@@ -12,34 +12,56 @@ BATCH_SIZE = 64
 EPOCHS = 50 # Increased for real dataset
 
 def main():
-    print(f"Opal Vanguard: Training ResNet from local dataset {DATASET_PATH}...")
+    print(f"Opal Vanguard: Training ResNet from local dataset {DATASET_PATH} (Streaming Mode)...")
     
-    # 1. Initialize Loader
+    # 1. Initialize Loader & Get Indices
     loader = RadioMLDataLoader(DATASET_PATH)
-    (x_train, y_train, z_train), (x_test, y_test, z_test) = loader.get_train_test_split(test_size=0.2)
+    train_indices, val_indices = loader.get_train_val_indices()
     
-    # 2. Build ResNet Model
+    # 2. Build tf.data Datasets from Generator
+    train_dataset = tf.data.Dataset.from_generator(
+        lambda: loader.get_generator(train_indices, BATCH_SIZE),
+        output_signature=(
+            tf.TensorSpec(shape=(None, 1024, 2), dtype=tf.float32),
+            tf.TensorSpec(shape=(None, 24), dtype=tf.float32)
+        )
+    ).prefetch(tf.data.AUTOTUNE)
+
+    val_dataset = tf.data.Dataset.from_generator(
+        lambda: loader.get_generator(val_indices, BATCH_SIZE),
+        output_signature=(
+            tf.TensorSpec(shape=(None, 1024, 2), dtype=tf.float32),
+            tf.TensorSpec(shape=(None, 24), dtype=tf.float32)
+        )
+    ).prefetch(tf.data.AUTOTUNE)
+    
+    # 3. Build ResNet Model
     model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
     model.compile(optimizer='adam', 
                   loss='categorical_crossentropy', 
                   metrics=['accuracy'])
     
-    # 3. Callbacks (Good practice for deeper models)
+    # 4. Callbacks
     callbacks = [
         tf.keras.callbacks.EarlyStopping(patience=5, restore_best_weights=True),
         tf.keras.callbacks.ModelCheckpoint('best_resnet.keras', save_best_only=True)
     ]
     
-    # 4. Train
-    print("\n--- Phase 3: Training ResNet on Synthetic RadioML Dataset ---")
-    history = model.fit(x_train, y_train, 
-                        epochs=EPOCHS, 
-                        batch_size=BATCH_SIZE, 
-                        validation_data=(x_test, y_test),
-                        callbacks=callbacks,
-                        verbose=1)
+    # 5. Train
+    # Need to specify steps_per_epoch since generators are infinite
+    steps_per_epoch = len(train_indices) // BATCH_SIZE
+    validation_steps = len(val_indices) // BATCH_SIZE
+
+    print("\n--- Phase 3: Training ResNet on Full RadioML Dataset (Streaming) ---")
+    model.fit(train_dataset, 
+              epochs=EPOCHS, 
+              steps_per_epoch=steps_per_epoch,
+              validation_data=val_dataset,
+              validation_steps=validation_steps,
+              callbacks=callbacks,
+              verbose=1)
     
-    # 5. Save Final Model
+    # 6. Save Final Model
     model.save(MODEL_SAVE_PATH)
     print(f"\nResNet Model saved to {MODEL_SAVE_PATH}")
 

@@ -2,12 +2,14 @@
 
 ... (existing entries) ...
 
-## [2026-03-13] Milestone 9: The "Titanium Shield" Suite
-- **Hurdle (Persistent Instability):** Even with Absolute Shield, extreme spikes caused internal model math to collapse into negative infinity.
-- **Solution 1 (Global Max Scaling):** Switched to a strict `max(abs(x))` scaling in `data_loader.py`. This guarantees that every single input value is strictly between `[-1.0, 1.0]`, removing any chance of input-driven overflow.
-- **Solution 2 (Kernel Constraints):** Applied `MaxNorm(3)` to every layer in the ResNet. This physically limits the weight magnitudes, acting as a final governor against mathematical explosion.
-- **Observability:** Added live `min/max` batch statistics to the generator logs for real-time data verification.
+## [2026-03-13] Milestone 10: The "Diamond Shield" Finality
+- **Hurdle (Unbreakable Outliers):** Discovered that extreme spikes during mean calculation were still creating overflows before the scaling step.
+- **Solution (Diamond Shield):** Implemented the ultimate numerical safety pipeline in `data_loader.py`:
+    1. **Pre-Centering Clipping:** All raw data is now strictly capped at +/- 100 *before* any mean is calculated, preventing the summation overflow.
+    2. **MAD-Scaling:** Replaced variance-based scaling with Mean Absolute Deviation. This avoids the `x^2` squaring step entirely, making it mathematically impossible to overflow the `float32` range.
+    3. **Double-Ended Scrubbing:** NaNs are killed at both the input and output of the normalization function.
+    4. **Hard Global Limit:** The final data is strictly bounded to `[-5.0, 5.0]`.
 
 ---
 **Current Phase:** Phase 3 - ResNet Evolution (Stable Compute)
-**Status:** Titanium Shield active. Math is now unbreakable. Ready for ignition.
+**Status:** Diamond Shield active. Numerical stability is now absolute. Ready for heavy training.

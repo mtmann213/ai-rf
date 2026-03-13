@@ -13,19 +13,25 @@ class RadioMLDataLoader:
         ]
 
     def normalize(self, x):
-        """Titanium Shield: Max-scaling for absolute numerical range control."""
-        # 1. Scrub NaNs/Infs immediately
-        x = np.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
+        """Diamond Shield: The final word in numerical stability."""
+        # 1. Cast to float32 and scrub non-finite values
+        x = np.nan_to_num(x.astype(np.float32), nan=0.0, posinf=0.0, neginf=0.0)
         
-        # 2. Mean Removal (Center the signal)
+        # 2. Aggressive Pre-Clip (Protect against huge sums during centering)
+        x = np.clip(x, -100.0, 100.0)
+        
+        # 3. Center the signal
         x = x - np.mean(x, axis=1, keepdims=True)
         
-        # 3. Global Max Scaling: Guarantees output is strictly within [-1, 1]
-        # Calculate max abs across the entire frame
-        scale = np.max(np.abs(x), axis=(1, 2), keepdims=True) + 1e-8
-        x = x / scale
+        # 4. Standardize Variance using MAD (Mean Absolute Deviation)
+        # This avoids squaring entirely, preventing overflow.
+        mad = np.mean(np.abs(x), axis=(1, 2), keepdims=True)
+        # Safety for zero-signal batches
+        mad = np.where(mad < 1e-7, 1.0, mad)
+        x = x / mad
         
-        return x
+        # 5. Final Global Safety Clip
+        return np.clip(x, -5.0, 5.0)
 
     def get_generator(self, indices, batch_size=64):
         """Turbocharged generator with live stats."""

@@ -79,7 +79,6 @@ def main():
 
     model.fit(train_dataset, 
               epochs=EPOCHS, 
-    ...
               initial_epoch=initial_epoch,
               steps_per_epoch=steps_per_epoch,
               validation_data=val_dataset,

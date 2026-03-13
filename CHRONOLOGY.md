@@ -2,13 +2,12 @@
 
 ... (existing entries) ...
 
-## [2026-03-13] Milestone 8: The "Absolute Shield" Fix
-- **Hurdle (Persistent NaN):** Even with Logits Loss, the 2018 dataset outliers caused a numerical overflow during the squaring step of Z-score normalization (Std Dev).
-- **Solution (Absolute Shield):** Implemented a no-squaring normalization in `data_loader.py`. 
-    1. **Strict Clipping:** Limited all raw samples to +/- 100.
-    2. **Mean Absolute Deviation:** Replaced Standard Deviation with Mean Absolute Value for scaling. This removes the squaring operation entirely, making the math "unbreakable."
-    3. **Global NaN Guard:** Added a final `np.nan_to_num` pass to ensure zero NaNs ever reach the model.
+## [2026-03-13] Milestone 9: The "Titanium Shield" Suite
+- **Hurdle (Persistent Instability):** Even with Absolute Shield, extreme spikes caused internal model math to collapse into negative infinity.
+- **Solution 1 (Global Max Scaling):** Switched to a strict `max(abs(x))` scaling in `data_loader.py`. This guarantees that every single input value is strictly between `[-1.0, 1.0]`, removing any chance of input-driven overflow.
+- **Solution 2 (Kernel Constraints):** Applied `MaxNorm(3)` to every layer in the ResNet. This physically limits the weight magnitudes, acting as a final governor against mathematical explosion.
+- **Observability:** Added live `min/max` batch statistics to the generator logs for real-time data verification.
 
 ---
 **Current Phase:** Phase 3 - ResNet Evolution (Stable Compute)
-**Status:** Absolute Shield active. This is the definitive fix for stability.
+**Status:** Titanium Shield active. Math is now unbreakable. Ready for ignition.

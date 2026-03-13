@@ -1,63 +1,37 @@
-# Opal Vanguard: Session Resume & Handoff
+# Opal Vanguard: Mission Resume & Handoff
 
-**Last Updated:** 2026-03-12
-**Current Milestone:** Phase 2 Complete / Phase 3 Initiated
-**Status:** Pipeline verified on synthetic data; awaiting 31GB RadioML 2018.01A dataset.
+**Status:** Phase 3 IN PROGRESS | Awaiting 50-epoch completion on RTX 3080 Ti.
 
 ---
 
-## 1. Project Context
-*   **Mission:** Neural Receiver for 24-modulation classification.
-*   **Key Architectures:** 
-    *   `OpalVanguard`: Initial 3-layer Conv1D CNN (Functional API).
-    *   `OpalVanguard_ResNet`: Advanced Residual Network with skip connections (Current Lead).
-*   **Hardware:** 
-    *   Primary: Laptop (NVIDIA RTX PRO 2000 Blackwell).
-    *   Target: Desktop (NVIDIA RTX 3080 Ti via WSL2/Docker).
+## 1. Active File Map
+*   `data_loader.py`: **The Engine.** Handles HDF5 streaming, normalization, and chunking.
+*   `train_resnet.py`: **The Pilot.** Main training script with resumability.
+*   `resnet_opal_vanguard.py`: **The Vessel.** Defines the 1D-ResNet architecture.
+*   `DOCKER_GUIDE.md`: **The Manual.** How to run on the 3080 Ti desktop.
 
-## 2. Active File Map
-| File | Role |
-| :--- | :--- |
-| `data_loader.py` | Memory-efficient HDF5 streaming for RadioML datasets. |
-| `resnet_opal_vanguard.py` | Definition of the ResNet architecture. |
-| `train_resnet.py` | Main training script with EarlyStopping and Checkpointing. |
-| `generate_synthetic_radioml.py` | Local data factory (Mimics 31GB dataset structure). |
-| `benchmark_snr.py` | Evaluation tool for accuracy curves and Confusion Matrices. |
-| `Dockerfile` / `docker-compose.yml` | Containerization for Windows/WSL2 portability. |
-
-## 3. Immediate Next Steps
-1.  **Dataset Acquisition:** Wait for `GOLD_XYZ_OSC.0001_1024.hdf5` (31GB) to finish downloading.
-2.  **Move Dataset:** Place the downloaded `.hdf5` file in the root directory.
-## 4. Launch Heavy Training
-*   **Recommended (Desktop/Windows):** Install **Docker Desktop**, enable WSL2 integration, and run:
-    ```bash
-    sudo docker compose up --build -d
-    ```
-*   **Local (Laptop):** `python3 train_resnet.py` (CPU only until Blackwell drivers mature).
-
-
-## 4. Technical Debt / Open Issues
-*   **GPU Detection:** TensorFlow 2.21 is currently defaulting to CPU on the Blackwell Laptop due to CUDA library pathing. Use the `LD_LIBRARY_PATH` export found in `CHRONOLOGY.md` to troubleshoot.
-*   **Baseline:** Current accuracy is ~8% on 7,200 synthetic samples. Expect >90% once trained on the full 31GB set.
-
-## 5. Resume Commands
+## 2. Desktop (RTX 3080 Ti) Commands
+Use these commands on your Windows Desktop (WSL2) to restart the heavy training:
 ```bash
-# Verify the environment
-pip install -r requirements.txt --break-system-packages
+# Update the code
+git pull origin main
 
-# Run the local data generator if starting fresh
-python3 generate_synthetic_radioml.py
+# Start the container (Builds if necessary)
+sudo docker compose up --build -d
 
-# Train the advanced ResNet model
-python3 train_resnet.py
-
-# Generate performance visualizations
-python3 benchmark_snr.py
+# Watch the progress (Look for 'Heartbeat Dots')
+sudo docker logs -f opal-vanguard-receiver
 ```
 
-## 7. Native Docker GPU Fix (WSL2)
-If Docker Desktop is NOT installed and you are using native Linux Docker, run this to enable the GPU:
-1. **Config:** 
+## 3. Laptop (RTX Blackwell) Commands
+Use these for development or small-scale testing:
+```bash
+# Fix library paths for local Python
+./run_vanguard.sh
+```
+
+## 4. Troubleshooting: GPU Fix (WSL2)
+If Docker doesn't see the 3080 Ti, run this in your Desktop terminal:
 ```bash
 sudo tee /etc/docker/daemon.json <<EOF
 {
@@ -69,6 +43,9 @@ sudo tee /etc/docker/daemon.json <<EOF
     }
 }
 EOF
+sudo service docker restart
 ```
-2. **Restart:** `sudo service docker restart`
-3. **Run:** `sudo docker compose up --build -d`
+
+---
+**Tech Lead:** Mike Mann
+**Diary Reference:** See `CHRONOLOGY.md` for the technical history.

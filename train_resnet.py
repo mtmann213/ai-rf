@@ -18,7 +18,7 @@ def main():
     loader = RadioMLDataLoader(DATASET_PATH)
     train_indices, val_indices = loader.get_train_val_indices()
     
-    # 2. Build tf.data Datasets from Generator
+    # 2. Build tf.data Datasets
     train_dataset = tf.data.Dataset.from_generator(
         lambda: loader.get_generator(train_indices, BATCH_SIZE),
         output_signature=(
@@ -35,33 +35,43 @@ def main():
         )
     ).prefetch(tf.data.AUTOTUNE)
     
-    # 3. Build ResNet Model
-    model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
-    model.compile(optimizer='adam', 
-                  loss='categorical_crossentropy', 
-                  metrics=['accuracy'])
+    # 3. Resume or Build Model
+    initial_epoch = 0
+    checkpoint_path = 'best_resnet.keras'
+    
+    if os.path.exists(checkpoint_path):
+        print(f"Found existing checkpoint at {checkpoint_path}. Resuming training...")
+        model = tf.keras.models.load_model(checkpoint_path)
+        # Note: In a production environment, you'd store the epoch number in a separate file.
+        # For now, we resume and the user can track progress via logs.
+    else:
+        print("No checkpoint found. Building fresh ResNet model...")
+        model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
+        model.compile(optimizer='adam', 
+                      loss='categorical_crossentropy', 
+                      metrics=['accuracy'])
     
     # 4. Callbacks
     callbacks = [
         tf.keras.callbacks.EarlyStopping(patience=5, restore_best_weights=True),
-        tf.keras.callbacks.ModelCheckpoint('best_resnet.keras', save_best_only=True)
+        tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_best_only=True),
+        tf.keras.callbacks.CSVLogger('training_log.csv', append=True)
     ]
     
     # 5. Train
-    # Need to specify steps_per_epoch since generators are infinite
     steps_per_epoch = len(train_indices) // BATCH_SIZE
     validation_steps = len(val_indices) // BATCH_SIZE
 
-    print("\n--- Phase 3: Training ResNet on Full RadioML Dataset (Streaming) ---")
+    print(f"\n--- Phase 3: Training ResNet on Full RadioML Dataset ---")
     model.fit(train_dataset, 
               epochs=EPOCHS, 
+              initial_epoch=initial_epoch,
               steps_per_epoch=steps_per_epoch,
               validation_data=val_dataset,
               validation_steps=validation_steps,
               callbacks=callbacks,
               verbose=1)
     
-    # 6. Save Final Model
     model.save(MODEL_SAVE_PATH)
     print(f"\nResNet Model saved to {MODEL_SAVE_PATH}")
 

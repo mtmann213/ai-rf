@@ -59,10 +59,11 @@ def main():
                 import pandas as pd
                 log_df = pd.read_csv(log_path)
                 if not log_df.empty:
-                    initial_epoch = log_df['epoch'].max() + 1
+                    initial_epoch = int(log_df['epoch'].max() + 1)
                     print(f"Resuming from Epoch {initial_epoch}")
             except Exception as e:
                 print(f"Could not read logs for epoch tracking: {e}")
+    else:
         print("No checkpoint found. Building fresh ResNet model...")
         model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
         # Add clipnorm=1.0 as a safety governor to prevent nan gradients

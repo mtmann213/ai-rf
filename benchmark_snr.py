@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
 import sionna
-from sionna.utils import BinarySource, Mapper, Constellation
-from sionna.channel import AWGN
+from sionna.phy.mapping import BinarySource, Mapper, Constellation
+from sionna.phy.channel import AWGN
 
 # Import configuration from training script
 from train_opal_vanguard import MODULATIONS, NUM_CLASSES, INPUT_LENGTH, INPUT_SHAPE, get_sionna_constellation
@@ -19,14 +19,17 @@ def generate_evaluation_data(mod_idx, batch_size, ebno_db):
     source = BinarySource()
     channel = AWGN()
     
+    # Calculate noise variance 'no'
+    no = 10.0**(-ebno_db/10.0)
+    
     b = source([batch_size, INPUT_LENGTH * const.num_bits_per_symbol])
     x = mapper(b)
-    y = channel([x, ebno_db])
+    y = channel(x, no)
     
     y_iq = tf.stack([tf.math.real(y), tf.math.imag(y)], axis=-1)
     return y_iq
 
-def run_benchmarking(model_path='opal_vanguard_base.h5'):
+def run_benchmarking(model_path='opal_vanguard_v2.h5'):
     if not os.path.exists(model_path):
         print(f"Error: Model file {model_path} not found. Please run train_opal_vanguard.py first.")
         return

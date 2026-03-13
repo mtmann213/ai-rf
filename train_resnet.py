@@ -74,9 +74,7 @@ def main():
     print(f"\n--- Phase 3: Training ResNet on Full RadioML Dataset ---")
     print(f"Dataset: {DATASET_PATH}")
     print(f"Batch Size: {BATCH_SIZE} | Total Steps: {steps_per_epoch}")
-
-    input("\nOpal Vanguard: Press ENTER to begin training...")
-
+    
     model.fit(train_dataset, 
               epochs=EPOCHS, 
               initial_epoch=initial_epoch,

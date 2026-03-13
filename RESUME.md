@@ -28,9 +28,13 @@
 ## 3. Immediate Next Steps
 1.  **Dataset Acquisition:** Wait for `GOLD_XYZ_OSC.0001_1024.hdf5` (31GB) to finish downloading.
 2.  **Move Dataset:** Place the downloaded `.hdf5` file in the root directory.
-3.  **Launch Heavy Training:**
-    *   *Local:* `python3 train_resnet.py`
-    *   *Docker (Desktop):* `docker-compose up --build`
+## 4. Launch Heavy Training
+*   **Recommended (Desktop/Windows):** Install **Docker Desktop**, enable WSL2 integration, and run:
+    ```bash
+    sudo docker compose up --build -d
+    ```
+*   **Local (Laptop):** `python3 train_resnet.py` (CPU only until Blackwell drivers mature).
+
 
 ## 4. Technical Debt / Open Issues
 *   **GPU Detection:** TensorFlow 2.21 is currently defaulting to CPU on the Blackwell Laptop due to CUDA library pathing. Use the `LD_LIBRARY_PATH` export found in `CHRONOLOGY.md` to troubleshoot.

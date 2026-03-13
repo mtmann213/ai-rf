@@ -13,17 +13,24 @@ class RadioMLDataLoader:
         ]
 
     def normalize(self, x):
-        """Z-Score standardization: ensures mean 0 and unit variance."""
-        # 1. Scrub NaNs and Infs
+        """Absolute Shield: No-squaring normalization for maximum stability."""
+        # 1. Scrub NaNs/Infs immediately
         x = np.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
         
-        # 2. Standardize each sample individually
-        # Calculate mean and std across the time axis (1024 samples)
-        mean = np.mean(x, axis=1, keepdims=True) # [Batch, 1, 2]
-        std = np.std(x, axis=1, keepdims=True)   # [Batch, 1, 2]
+        # 2. Strict Clipping to prevent overflow in any downstream math
+        # Most ADC samples in this dataset are within +/- 20
+        x = np.clip(x, -100.0, 100.0)
         
-        # 3. Apply formula: (x - mean) / std
-        return (x - mean) / (std + 1e-8)
+        # 3. Mean Removal (Center the signal)
+        x = x - np.mean(x, axis=1, keepdims=True)
+        
+        # 4. Robust Scaling: Use Mean Absolute Value instead of Std Dev
+        # This avoids squaring x, which is the primary cause of overflows
+        scale = np.mean(np.abs(x), axis=(1, 2), keepdims=True) + 1e-8
+        x = x / scale
+        
+        # 5. Final safety check: if anything is still NaN, kill it
+        return np.nan_to_num(x)
 
     def get_generator(self, indices, batch_size=64):
         """Turbocharged generator: reads contiguous chunks for maximum speed."""

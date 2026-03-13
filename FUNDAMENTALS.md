@@ -23,9 +23,9 @@ To process temporal I/Q data at scale, we use a **1D-ResNet**:
 
 ### Indestructible Normalization
 RF data often contains extreme outliers or corrupted `NaN` values. Our pipeline uses:
-1.  **NaN Scrubbing:** Replaces corrupted samples with 0.
-2.  **Outlier Clipping:** Hard-limits signal spikes to prevent math overflows.
-3.  **L2 Scaling:** Ensures every I/Q vector has unit energy before entering the model.
+1.  **Label Scrubbing:** Hardens the dataset against internal corruption by forcing labels to strict [0, 1] bounds.
+2.  **Soft-Clip Normalization:** Uses `x / (1 + |x|)` to map the entire infinite number line to a smooth (-1, 1) range, providing perfect gradient stability.
+3.  **Zero-Variance Protection:** Uses `BatchNormalization` to maintain statistical consistency even during periods of signal silence.
 
 ### Turbocharged I/O
 Streaming 21GB datasets on WSL2 creates a disk bottleneck. Our **Chunked Generator** reads large contiguous blocks (4096 samples) to maximize disk throughput and keep the GPU saturated.

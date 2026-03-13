@@ -13,8 +13,9 @@
 ## Phase 3: Heavy Compute & ResNet (IN PROGRESS)
 *   [x] **ResNet Upgrade:** Advanced Residual Network implementation.
 *   [x] **Distributed Compute:** Docker/WSL2 setup for RTX 3080 Ti.
+*   [x] **Stability Lockdown (V7.1):** Zero-variance fix and label scrubbing deployed.
 *   [ ] **Full Scale Run:** Complete 50 epochs on 2018.01A dataset.
-*   [ ] **GPU Fine-tuning:** Optimization for NVIDIA Blackwell drivers.
+*   [ ] **Validation:** Verify accuracy waterfall curves against baseline.
 
 ## Phase 4: Complex Channel Evolution (Next Month)
 *   [ ] **Multipath Fading:** Integration of Rayleigh/Rician channels.

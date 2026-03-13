@@ -21,7 +21,10 @@ class RadioMLDataLoader:
         x = np.clip(x, -1e3, 1e3)
         
         # 3. Scale by max absolute value
-        max_val = np.max(np.abs(x)) + 1e-8
+        max_val = np.max(np.abs(x))
+        if max_val < 1e-9:
+            return x # Return as is if signal is basically zero
+            
         x_scaled = x / max_val
         
         # 4. Final L2 normalization

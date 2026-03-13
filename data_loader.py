@@ -13,17 +13,18 @@ class RadioMLDataLoader:
         ]
 
     def normalize(self, x):
-        """Obsidian Shield: Robust Max-Scaling."""
+        """Stellar Scaling: Robust Z-Score + Tanh Squashing."""
         # 1. Scrub NaNs/Infs
         x = np.nan_to_num(x.astype(np.float32), nan=0.0, posinf=0.0, neginf=0.0)
         
-        # 2. Global Max Scaling (Strict range [-1, 1])
-        # We use axis=(1,2) to get the max absolute value per sample
-        max_val = np.max(np.abs(x), axis=(1, 2), keepdims=True)
-        # Prevent division by zero
-        max_val = np.where(max_val < 1e-8, 1.0, max_val)
+        # 2. Standardize (Mean 0, Std 1) per sample
+        mean = np.mean(x, axis=1, keepdims=True)
+        std = np.std(x, axis=1, keepdims=True) + 1e-8
+        x = (x - mean) / std
         
-        return x / max_val
+        # 3. Non-linear Squashing (Tanh)
+        # This guarantees every value is in (-1, 1) and compresses outliers
+        return np.tanh(x)
 
     def get_generator(self, indices, batch_size=64):
         """Turbocharged generator with chunked loading."""
@@ -34,7 +35,7 @@ class RadioMLDataLoader:
             X_ds = f['X']
             Y_ds = f['Y']
             
-            print(f"\n[V3.0] Obsidian Pipe Active. Streaming...")
+            print(f"\n[V5.0] Stellar Pipe Active. Squashing engaged.")
             while True:
                 np.random.shuffle(indices)
                 for i in range(0, len(indices), chunk_size):

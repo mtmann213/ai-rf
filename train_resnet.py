@@ -4,19 +4,19 @@ import tensorflow as tf
 from data_loader import RadioMLDataLoader
 from resnet_opal_vanguard import build_resnet_vanguard
 
-# Vantablack: Force Disable XLA for numerical safety
+# Stellar: Disable XLA for max precision
 tf.config.optimizer.set_jit(False)
 
 # Configuration
 DATASET_PATH = "2018_01A/GOLD_XYZ_OSC.0001_1024.hdf5"
-MODEL_SAVE_PATH = "opal_vanguard_resnet_v4.h5"
+MODEL_SAVE_PATH = "opal_vanguard_resnet_v5.h5"
 INPUT_SHAPE = (1024, 2)
 NUM_CLASSES = 24
 BATCH_SIZE = 64 
 EPOCHS = 50 
 
 def main():
-    print(f"\n[V4.0] Vantablack Engine Engaged.")
+    print(f"\n[V5.0] Stellar Engine Engaged.")
     
     if not os.path.exists(DATASET_PATH):
         print(f"CRITICAL: Dataset missing at {DATASET_PATH}")
@@ -44,16 +44,16 @@ def main():
     ).prefetch(tf.data.AUTOTUNE)
     
     # 3. Model
-    checkpoint_path = 'best_resnet_v4.keras'
+    checkpoint_path = 'best_resnet_v5.keras'
     
     if os.path.exists(checkpoint_path):
-        print(f"Resuming V4 from checkpoint: {checkpoint_path}")
+        print(f"Resuming V5 from checkpoint: {checkpoint_path}")
         model = tf.keras.models.load_model(checkpoint_path)
     else:
-        print("Building fresh Vantablack ResNet...")
+        print("Building fresh Stellar ResNet...")
         model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
-        # Stability: 2e-5 LR + clipvalue=0.5 (hard limit on updates)
-        optimizer = tf.keras.optimizers.Adam(learning_rate=0.00002, clipvalue=0.5)
+        # Stability: 2e-5 LR + global_clipnorm (preserves gradient direction)
+        optimizer = tf.keras.optimizers.Adam(learning_rate=0.00002, global_clipnorm=1.0)
         loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True, label_smoothing=0.1)
         model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'])
     
@@ -61,11 +61,11 @@ def main():
     callbacks = [
         tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True),
         tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_best_only=True),
-        tf.keras.callbacks.CSVLogger('training_log_v4.csv', append=True)
+        tf.keras.callbacks.CSVLogger('training_log_v5.csv', append=True)
     ]
     
     # 5. Ignite
-    print(f"--- Launching V4 mission ---")
+    print(f"--- Launching V5 Stellar mission ---")
     sys.stdout.flush()
     
     steps = len(train_indices) // BATCH_SIZE

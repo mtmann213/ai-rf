@@ -7,20 +7,20 @@ def residual_block(x, filters, kernel_size=3, stride=1):
     
     # First Convolution
     x = layers.Conv1D(filters, kernel_size, strides=stride, padding='same', 
-                      kernel_regularizer=l2_reg,
+                      kernel_initializer='he_uniform',
                       kernel_constraint=tf.keras.constraints.MaxNorm(3))(x)
     x = layers.BatchNormalization()(x)
-    x = layers.ReLU(max_value=6.0)(x) # Vantablack: Bounded Activation
+    x = layers.ReLU(max_value=6.0)(x) 
     
     # Second Convolution
     x = layers.Conv1D(filters, kernel_size, strides=1, padding='same', 
-                      kernel_regularizer=l2_reg,
+                      kernel_initializer='he_uniform',
                       kernel_constraint=tf.keras.constraints.MaxNorm(3))(x)
     x = layers.BatchNormalization()(x)
     
     if stride != 1 or shortcut.shape[-1] != filters:
         shortcut = layers.Conv1D(filters, 1, strides=stride, padding='same', 
-                                 kernel_regularizer=l2_reg,
+                                 kernel_initializer='he_uniform',
                                  kernel_constraint=tf.keras.constraints.MaxNorm(3))(shortcut)
         shortcut = layers.BatchNormalization()(shortcut)
         
@@ -30,14 +30,13 @@ def residual_block(x, filters, kernel_size=3, stride=1):
 
 def build_resnet_vanguard(input_shape, num_classes):
     inputs = layers.Input(shape=input_shape)
-    l2_reg = regularizers.l2(1e-4)
     
-    # Pre-Stabilizer
-    x = layers.BatchNormalization()(inputs)
+    # Stellar: LayerNormalization is more stable than BatchNormalization for input
+    x = layers.LayerNormalization()(inputs)
     
     # Stem
     x = layers.Conv1D(64, 7, strides=2, padding='same', 
-                      kernel_regularizer=l2_reg,
+                      kernel_initializer='he_uniform',
                       kernel_constraint=tf.keras.constraints.MaxNorm(3))(x)
     x = layers.BatchNormalization()(x)
     x = layers.ReLU(max_value=6.0)(x)
@@ -53,12 +52,12 @@ def build_resnet_vanguard(input_shape, num_classes):
     
     # Head
     x = layers.GlobalAveragePooling1D()(x)
-    x = layers.Dense(512, kernel_regularizer=l2_reg,
+    x = layers.Dense(512, kernel_initializer='he_uniform',
                      kernel_constraint=tf.keras.constraints.MaxNorm(3))(x)
     x = layers.ReLU(max_value=6.0)(x)
     x = layers.Dropout(0.5)(x)
     
     # Logits Output (No Softmax)
-    outputs = layers.Dense(num_classes, kernel_regularizer=l2_reg)(x)
+    outputs = layers.Dense(num_classes, kernel_initializer='he_uniform')(x)
     
-    return models.Model(inputs=inputs, outputs=outputs, name="OpalVanguard_ResNet_V4_Vantablack")
+    return models.Model(inputs=inputs, outputs=outputs, name="OpalVanguard_ResNet_V5_Stellar")

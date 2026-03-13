@@ -13,21 +13,24 @@ class RadioMLDataLoader:
         ]
 
     def normalize(self, x):
-        """Extreme robustness normalization for RadioML 2018.01A."""
-        # 1. Clip extreme outliers (3 standard deviations is usually safe for RF)
-        # This prevents 'inf' or 'nan' during math operations
+        """Indestructible normalization: scrubs NaNs, clips outliers, and scales."""
+        # 1. Replace NaNs and Infs with 0
+        x = np.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
+        
+        # 2. Clip extreme outliers
         x = np.clip(x, -1e3, 1e3)
         
-        # 2. Scale by the max absolute value in the batch
+        # 3. Scale by max absolute value
         max_val = np.max(np.abs(x)) + 1e-8
         x_scaled = x / max_val
         
-        # 3. Final L2 normalization
+        # 4. Final L2 normalization
         norm = np.linalg.norm(x_scaled, axis=-1, keepdims=True)
         return x_scaled / (norm + 1e-8)
 
     def get_generator(self, indices, batch_size=64):
-        """Streams normalized data from the HDF5 file in batches."""
+        """Streams normalized data with heartbeat for observability."""
+        count = 0
         while True:
             np.random.shuffle(indices)
             for i in range(0, len(indices), batch_size):
@@ -36,8 +39,13 @@ class RadioMLDataLoader:
                     X_batch = f['X'][batch_idx]
                     Y_batch = f['Y'][batch_idx]
                 
-                # Apply normalization
                 X_batch = self.normalize(X_batch)
+                
+                count += 1
+                if count % 100 == 0:
+                    # Small heartbeat to show generator is alive
+                    print(f".", end="", flush=True)
+                
                 yield X_batch, Y_batch
 
     def get_train_val_indices(self, test_size=0.2, seed=42):

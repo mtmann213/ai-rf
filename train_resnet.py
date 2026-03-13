@@ -38,12 +38,21 @@ def main():
     # 3. Resume or Build Model
     initial_epoch = 0
     checkpoint_path = 'best_resnet.keras'
+    log_path = 'training_log.csv'
     
+    if os.path.exists(log_path):
+        try:
+            import pandas as pd
+            log_df = pd.read_csv(log_path)
+            if not log_df.empty:
+                initial_epoch = log_df['epoch'].max() + 1
+                print(f"Resuming from Epoch {initial_epoch} based on {log_path}")
+        except Exception as e:
+            print(f"Could not read logs for epoch tracking: {e}")
+
     if os.path.exists(checkpoint_path):
-        print(f"Found existing checkpoint at {checkpoint_path}. Resuming training...")
+        print(f"Found existing checkpoint at {checkpoint_path}. Loading model...")
         model = tf.keras.models.load_model(checkpoint_path)
-        # Note: In a production environment, you'd store the epoch number in a separate file.
-        # For now, we resume and the user can track progress via logs.
     else:
         print("No checkpoint found. Building fresh ResNet model...")
         model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
@@ -54,8 +63,9 @@ def main():
     # 4. Callbacks
     callbacks = [
         tf.keras.callbacks.EarlyStopping(patience=5, restore_best_weights=True),
-        tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_best_only=True),
-        tf.keras.callbacks.CSVLogger('training_log.csv', append=True)
+        # Save every 500 steps so we don't lose mid-epoch progress
+        tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_best_only=True, save_freq=500),
+        tf.keras.callbacks.CSVLogger(log_path, append=True)
     ]
     
     # 5. Train

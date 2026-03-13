@@ -29,24 +29,30 @@ class RadioMLDataLoader:
         return x_scaled / (norm + 1e-8)
 
     def get_generator(self, indices, batch_size=64):
-        """Streams normalized data with heartbeat for observability."""
+        """High-speed generator: opens file once and streams data."""
         count = 0
-        while True:
-            np.random.shuffle(indices)
-            for i in range(0, len(indices), batch_size):
-                batch_idx = sorted(indices[i:i+batch_size])
-                with h5py.File(self.file_path, 'r') as f:
-                    X_batch = f['X'][batch_idx]
-                    Y_batch = f['Y'][batch_idx]
-                
-                X_batch = self.normalize(X_batch)
-                
-                count += 1
-                if count % 100 == 0:
-                    # Small heartbeat to show generator is alive
-                    print(f".", end="", flush=True)
-                
-                yield X_batch, Y_batch
+        # Open file ONCE at the start of the generator
+        with h5py.File(self.file_path, 'r') as f:
+            X_ds = f['X']
+            Y_ds = f['Y']
+            
+            print(f"Opal Vanguard: Data Pipe Primed. Starting stream...")
+            while True:
+                np.random.shuffle(indices)
+                for i in range(0, len(indices), batch_size):
+                    # Sort indices for faster HDF5 contiguous access
+                    batch_idx = sorted(indices[i:i+batch_size])
+                    
+                    X_batch = X_ds[batch_idx]
+                    Y_batch = Y_ds[batch_idx]
+                    
+                    X_batch = self.normalize(X_batch)
+                    
+                    count += 1
+                    if count % 10 == 0: # More frequent heartbeat
+                        print(f".", end="", flush=True)
+                    
+                    yield X_batch, Y_batch
 
     def get_train_val_indices(self, test_size=0.2, seed=42):
         """Returns indices for training and validation splits without loading X/Y."""

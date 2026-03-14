@@ -56,7 +56,7 @@ def main():
             clipnorm=1.0,
             clipvalue=0.1
         )
-        loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+        loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
         
         # Explicitly disable JIT (XLA) inside compile
         model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'], jit_compile=False)

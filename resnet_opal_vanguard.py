@@ -61,6 +61,6 @@ def build_resnet_vanguard(input_shape, num_classes):
     x = layers.Dropout(0.5)(x)
     
     # Logits Output
-    outputs = layers.Dense(num_classes, kernel_initializer='he_uniform')(x)
+    outputs = layers.Dense(num_classes, activation='softmax', kernel_initializer='glorot_uniform')(x)
     
     return models.Model(inputs=inputs, outputs=outputs, name="OpalVanguard_ResNet_V7_EventHorizon")

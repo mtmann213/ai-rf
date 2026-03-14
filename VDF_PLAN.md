@@ -50,6 +50,10 @@ Using the 3rd USRP as an **Adversary Node** is critical.
 *   **Hardware Diversity:** 
     *   Capture 50% of data via **SMA Coaxial Cables** (Clean Reference).
     *   Capture 50% of data via **Antennas** (Real-World Multipath).
+*   **Spectral Diversity (Frequency Sweep):**
+    *   Capture samples across three distinct bands: **433 MHz** (UHF), **915 MHz** (Mid-Band), and **2.45 GHz** (ISM).
+*   **Temporal Diversity (Symbol Rate):**
+    *   Vary the **Samples Per Symbol (SPS)** across 4, 8, and 16 to ensure the ResNet is scale-invariant and can detect signals at different data rates.
 
 ## 5. Development Roadmap (The "Data Factory" Branch)
 

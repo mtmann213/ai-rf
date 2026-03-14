@@ -25,9 +25,9 @@ sudo docker logs -f opal-vanguard-receiver
 
 ## Step 4: Success Indicators
 *   **GPU Detected:** You see `Created device /device:GPU:0 ... NVIDIA GeForce RTX 3080 Ti`.
-*   **Data Flowing:** You see dots (`..........`) appearing quickly.
-*   **Learning:** You see `Epoch 1/50` followed by a progress bar and a numerical `loss` value (not `nan`).
+*   **Data Flowing:** You see `Event Horizon Engine Active. Mathematical Label Reconstruction engaged.`
+*   **Intelligence:** You see `accuracy` and `val_accuracy` climb steadily out of the 4% range, typically reaching **30-50%** within the first few epochs.
 
 ---
 **Troubleshooting:** 
-If Docker says `could not select device driver "nvidia"`, run the "Nuclear Fix" found in `RESUME.md`.
+If the container crashes with exit code 139 (SIGSEGV), it is likely a memory race in the prefetcher. Simply run `sudo docker compose up -d` to resume from the last saved checkpoint.

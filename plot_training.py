@@ -7,8 +7,18 @@ def plot_logs(csv_path='training_log_v7.csv', step_path='step_log_v7.csv'):
     if os.path.exists(step_path) and os.path.getsize(step_path) > 100:
         print(f"Plotting real-time step data from {step_path}...")
         df = pd.read_csv(step_path)
-        title_suffix = "(Real-Time Steps)"
-        x_axis = 'step'
+        
+        # Calculate continuous absolute steps across epochs
+        # Whenever 'step' drops, it means a new epoch started
+        epoch_offsets = df['step'].diff() < 0
+        df['epoch_id'] = epoch_offsets.cumsum()
+        
+        # Find max step per epoch to add as offset
+        max_steps = df.groupby('epoch_id')['step'].max().shift(1).fillna(0).cumsum()
+        df['absolute_step'] = df['step'] + df['epoch_id'].map(max_steps)
+
+        title_suffix = "(Continuous Steps)"
+        x_axis = 'absolute_step'
     elif os.path.exists(csv_path):
         print(f"Plotting epoch data from {csv_path}...")
         df = pd.read_csv(csv_path)

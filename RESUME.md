@@ -36,4 +36,4 @@ Laptop GPU (RTX PRO 2000) is currently in a "Software Hold" status. It requires 
 
 ---
 **Tech Lead:** Mike Mann
-**Diary Reference:** See `CHRONOLOGY.md` for the full technical evolution from V1.0 to V7.2.
+**Diary Reference:** See `CHRONOLOGY.md` for the full technical evolution from V1.0 to V7.6.1.

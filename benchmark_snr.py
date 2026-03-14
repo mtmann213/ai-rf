@@ -4,90 +4,62 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
-import sionna
-from sionna.phy.mapping import BinarySource, Mapper, Constellation
-from sionna.phy.channel import AWGN
+from data_loader import RadioMLDataLoader
 
-# Import configuration from training script
-from train_opal_vanguard import MODULATIONS, NUM_CLASSES, INPUT_LENGTH, INPUT_SHAPE, get_sionna_constellation
+# Configuration
+DATASET_PATH = "2018_01A/GOLD_XYZ_OSC.0001_1024.hdf5"
+MODEL_PATH = 'best_resnet_v7.keras'
+BATCH_SIZE = 128
 
-def generate_evaluation_data(mod_idx, batch_size, ebno_db):
-    """Generates synthetic Sionna samples for a specific modulation and SNR."""
-    mod_type = MODULATIONS[mod_idx]
-    const = get_sionna_constellation(mod_type)
-    mapper = Mapper(constellation=const)
-    source = BinarySource()
-    channel = AWGN()
-    
-    # Calculate noise variance 'no'
-    no = 10.0**(-ebno_db/10.0)
-    
-    b = source([batch_size, INPUT_LENGTH * const.num_bits_per_symbol])
-    x = mapper(b)
-    y = channel(x, no)
-    
-    y_iq = tf.stack([tf.math.real(y), tf.math.imag(y)], axis=-1)
-    return y_iq
-
-def run_benchmarking(model_path='opal_vanguard_v2.h5'):
-    if not os.path.exists(model_path):
-        print(f"Error: Model file {model_path} not found. Please run train_opal_vanguard.py first.")
+def run_benchmarking():
+    if not os.path.exists(MODEL_PATH):
+        print(f"Error: Model file {MODEL_PATH} not found.")
         return
 
-    print(f"Opal Vanguard: Loading model from {model_path}...")
-    model = tf.keras.models.load_model(model_path)
+    print(f"Opal Vanguard: Loading V7.1 model and dataset...")
+    model = tf.keras.models.load_model(MODEL_PATH)
+    loader = RadioMLDataLoader(DATASET_PATH)
+    _, val_indices = loader.get_train_val_indices()
     
-    snr_range = np.arange(-20, 31, 5)
-    overall_accuracies = []
+    # We'll evaluate on a large slice of the validation set (50,000 samples)
+    eval_indices = val_indices[:50000]
     
-    # Store predictions for the final Confusion Matrix (using a high SNR for clarity)
-    eval_snr = 20.0
+    val_ds = tf.data.Dataset.from_generator(
+        lambda: loader.get_generator(eval_indices, BATCH_SIZE),
+        output_signature=(
+            tf.TensorSpec(shape=(None, 1024, 2), dtype=tf.float32),
+            tf.TensorSpec(shape=(None, 24), dtype=tf.float32)
+        )
+    )
+
     all_preds = []
     all_labels = []
 
-    print("\n--- Starting SNR Benchmarking ---")
-    for snr in snr_range:
-        correct = 0
-        total = 0
-        
-        for idx, mod in enumerate(MODULATIONS):
-            x_test = generate_evaluation_data(idx, 100, float(snr))
-            y_test = np.full((100,), idx)
-            
-            preds = model.predict(x_test, verbose=0)
-            pred_labels = np.argmax(preds, axis=1)
-            
-            correct += np.sum(pred_labels == y_test)
-            total += 100
-            
-            # Capture data for Confusion Matrix at the target SNR
-            if snr == eval_snr:
-                all_preds.extend(pred_labels)
-                all_labels.extend(y_test)
-                
-        acc = correct / total
-        overall_accuracies.append(acc)
-        print(f"SNR {snr:3}dB | Accuracy: {acc:.4f}")
+    print(f"\n--- Starting Real-World Validation (50,000 samples) ---")
+    steps = len(eval_indices) // BATCH_SIZE
+    
+    for x_batch, y_batch in val_ds.take(steps):
+        preds = model.predict(x_batch, verbose=0)
+        all_preds.extend(np.argmax(preds, axis=1))
+        all_labels.extend(np.argmax(y_batch, axis=1))
 
-    # Plot 1: Accuracy vs SNR (Waterfall Curve)
-    plt.figure(figsize=(10, 6))
-    plt.plot(snr_range, overall_accuracies, marker='o', linestyle='-', linewidth=2)
-    plt.title('Opal Vanguard: Classification Accuracy vs SNR (AWGN)')
-    plt.xlabel('SNR (dB)')
-    plt.ylabel('Accuracy')
-    plt.grid(True)
-    plt.savefig('accuracy_vs_snr.png')
-    print("\nSaved accuracy_vs_snr.png")
+    all_preds = np.array(all_preds)
+    all_labels = np.array(all_labels)
+    
+    overall_acc = np.mean(all_preds == all_labels)
+    print(f"\nOverall Validation Accuracy: {overall_acc:.4f}")
 
-    # Plot 2: Confusion Matrix at +20dB
+    # Generate Confusion Matrix
     cm = confusion_matrix(all_labels, all_preds)
-    plt.figure(figsize=(12, 10))
-    sns.heatmap(cm, annot=True, fmt='d', xticklabels=MODULATIONS, yticklabels=MODULATIONS, cmap='Blues')
-    plt.title(f'Opal Vanguard: Confusion Matrix at {eval_snr}dB SNR')
-    plt.xlabel('Predicted Label')
-    plt.ylabel('True Label')
-    plt.savefig('confusion_matrix_20dB.png')
-    print("Saved confusion_matrix_20dB.png")
+    plt.figure(figsize=(14, 12))
+    sns.heatmap(cm, annot=True, fmt='d', 
+                xticklabels=loader.modulations, 
+                yticklabels=loader.modulations, cmap='Greens')
+    plt.title(f'Opal Vanguard V7.1: RadioML 2018.01A Confusion Matrix (Acc: {overall_acc:.4f})')
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.savefig('confusion_matrix_v7_real.png')
+    print("Saved confusion_matrix_v7_real.png")
 
 if __name__ == "__main__":
     run_benchmarking()

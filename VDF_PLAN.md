@@ -44,6 +44,11 @@ Using the 3rd USRP as an **Adversary Node** is critical.
 *   **Snapshots per Class:** 20,000 snapshots.
 *   **Snapshot Shape:** `(1024, 2)` (I and Q channels).
 *   **Total Dataset Size:** ~25GB (HDF5 format).
+*   **Storage Path:** Results stored in `data/vdf_captures/` (Ignored by Git).
+*   **Hardware Serials (The Trinity):**
+    *   **TX Node:** `3449AC1`
+    *   **RX Node:** `3457464`
+    *   **Adversary Node:** `3457480`
 *   **Synchronization (Anti-Drift):** 
     *   Inject a **10ms Pilot Tone** (CW at offset) at the start of every modulation change. 
     *   The Receiver must detect this tone to reset the sample counter, ensuring labels never "drift" due to network/USB lag.

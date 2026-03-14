@@ -2,15 +2,20 @@
 **Objective:** Capture 500,000+ synchronized I/Q snapshots using the Hardware Trinity (3x USRP B205-mini) to create a high-fidelity, environment-aware training dataset for the `ai-rf` ResNet.
 
 ## 1. Modulation Requirements
-We will target the "Trinity Suite," which includes all modulations from the 2018.01A dataset plus two "Vanguard-Specific" classes for real-world robustness.
+We will target the "Trinity Suite," which includes all 24 modulations from the 2018.01A dataset, plus 6 "Vanguard-Specific" classes for real-world robustness and modern standard awareness.
 
-*   **Digital Suite:** BPSK, QPSK, 8PSK, 16PSK, 32PSK, GMSK, OQPSK.
-*   **Amplitude Suite:** OOK, 4ASK, 8ASK.
-*   **Quadrature Suite:** 16QAM, 32QAM, 64QAM, 128QAM, 256QAM.
+*   **Digital PSK/APSK Suite:** BPSK, QPSK, 8PSK, 16PSK, 32PSK, 16APSK, 32APSK, 64APSK, 128APSK, OQPSK.
+*   **Quadrature (QAM) Suite:** 16QAM, 32QAM, 64QAM, 128QAM, 256QAM.
+*   **Amplitude (ASK/OOK) Suite:** OOK, 4ASK, 8ASK.
 *   **Analog Suite:** AM-SSB-WC, AM-SSB-SC, AM-DSB-WC, AM-DSB-SC, FM.
-*   **Vanguard Specials:** 
-    *   **Class 25: "Pure Noise"** (TX disabled, capturing floor noise).
-    *   **Class 26: "Active Jamming"** (Capturing the output of your `mike-bpsk-jammer` logic).
+*   **Modern Standards (Vanguard Expansion):**
+    *   **GMSK** (Used in GSM/AIS).
+    *   **OFDM** (The backbone of WiFi, LTE, and 5G).
+    *   **LoRa** (Chirp Spread Spectrum for IoT).
+    *   **FSK/GFSK** (Used in Bluetooth and industrial telemetry).
+*   **Signal Environment Classes:** 
+    *   **Pure Noise** (Capture of the local RF floor).
+    *   **Active Jamming** (Output of the BPSK-Jammer logic).
 
 ## 2. Signal Construction Strategy
 To make the AI robust, the signals must be transmitted in two distinct modes:

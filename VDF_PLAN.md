@@ -55,9 +55,13 @@ Using the 3rd USRP as an **Adversary Node** is critical.
 *   **Temporal Diversity (Symbol Rate):**
     *   Vary the **Samples Per Symbol (SPS)** across 4, 8, and 16 to ensure the ResNet is scale-invariant.
 *   **Sigma Hardening (Hardware Impairments):**
-    *   **Carrier Frequency Offset (CFO):** Intentionally offset the TX by ±5 kHz to train the AI to handle "phase spin" from uncalibrated hardware.
-    *   **Sample Clock Offset (SCO):** Inject tiny timing skews to simulate drift between the TX and RX internal oscillators.
-    *   **Pulse Shaping Variation:** Vary the filter roll-off factor (Alpha) between 0.2, 0.35, and 0.5 to ensure the AI isn't overfitted to a specific filter shape.
+    *   **Carrier Frequency Offset (CFO):** Intentionally offset the TX by ±5 kHz.
+    *   **Sample Clock Offset (SCO):** Inject tiny timing skews.
+    *   **Pulse Shaping Variation:** Vary filter roll-off (Alpha) between 0.2 and 0.5.
+*   **Operational Requirements:**
+    *   **Hardware Warm-up:** Dummy TX for 5 minutes before capture to stabilize oscillators.
+    *   **Inter-Burst Gaps:** Include "Signal Edges" in 10% of snapshots (signal starting/stopping mid-window).
+    *   **Ground Truth Metadata:** Every HDF5 entry must include a linked metadata record of the exact SNR, CFO, SCO, and SPS used for that specific sample.
 
 ## 5. Development Roadmap (The "Data Factory" Branch)
 

@@ -44,11 +44,22 @@ Using the 3rd USRP as an **Adversary Node** is critical.
 *   **Snapshots per Class:** 20,000 snapshots.
 *   **Snapshot Shape:** `(1024, 2)` (I and Q channels).
 *   **Total Dataset Size:** ~25GB (HDF5 format).
-*   **Synchronization:** Use TCP-based triggers or a shared clock between TX/RX to ensure zero-error label assignment.
+*   **Synchronization (Anti-Drift):** 
+    *   Inject a **10ms Pilot Tone** (CW at offset) at the start of every modulation change. 
+    *   The Receiver must detect this tone to reset the sample counter, ensuring labels never "drift" due to network/USB lag.
+*   **Hardware Diversity:** 
+    *   Capture 50% of data via **SMA Coaxial Cables** (Clean Reference).
+    *   Capture 50% of data via **Antennas** (Real-World Multipath).
 
 ## 5. Development Roadmap (The "Data Factory" Branch)
 
-1.  **The Sequencer (`src/vdf_sequencer.py`):** Automates the loop of switching modulations and gain levels.
+### Phase 0: The VDF Pilot (MANDATORY)
+Before the full 25GB run, perform a "Small-Scale Test Flight":
+1.  **Scope:** 2 Modulations (BPSK, FM) | 1,000 snapshots each.
+2.  **Verify:** HDF5 structure compatibility and Label Reconstruction accuracy.
+3.  **Benchmarking:** Run Stage 1 of the Acclimation Strategy on this Pilot data.
+
+### Phase 1: The Sequencer (`src/vdf_sequencer.py`)
 2.  **The Labeler (`src/vdf_labeller.py`):** Implements a hard-coded tagging engine to ensure labels are never corrupted.
 3.  **The Sionna Bridge:** Pre-calculates waveforms to ensure mathematical purity before hardware impairments are added by the radio.
 

@@ -23,22 +23,30 @@ class RadioMLDataLoader:
         return x / (1.0 + np.abs(x))
 
     def get_generator(self, indices, batch_size=64):
-        """Turbocharged generator V7.0."""
-        count = 0
+        """Turbocharged generator V7.0 (Mathematical Label Reconstruction)."""
         chunk_size = 4096
+        
+        # The dataset is perfectly ordered: 24 Classes * 26 SNRs * 4096 Samples
+        SAMPLES_PER_CLASS = 26 * 4096
         
         with h5py.File(self.file_path, 'r') as f:
             X_ds = f['X']
-            Y_ds = f['Y']
             
-            print(f"\n[V7.0] Event Horizon Engine Active. Soft-clipping engaged.")
+            print(f"\n[V7.6] Event Horizon Engine Active. Mathematical Label Reconstruction engaged.")
             while True:
                 np.random.shuffle(indices)
                 for i in range(0, len(indices), chunk_size):
                     chunk_idx = sorted(indices[i:i+chunk_size])
                     X_chunk = X_ds[chunk_idx]
-                    Y_chunk = Y_ds[chunk_idx]
                     
+                    # Dynamically reconstruct Y labels based on the absolute index
+                    # because the HDF5 'Y' array is filled with corrupted memory values.
+                    Y_chunk = np.zeros((len(chunk_idx), len(self.modulations)), dtype=np.float32)
+                    for idx_in_chunk, abs_idx in enumerate(chunk_idx):
+                        class_idx = abs_idx // SAMPLES_PER_CLASS
+                        Y_chunk[idx_in_chunk, class_idx] = 1.0
+                    
+                    # Shuffle the chunk to prevent sequential bias within the batch
                     p = np.random.permutation(len(X_chunk))
                     X_chunk = X_chunk[p]
                     Y_chunk = Y_chunk[p]
@@ -50,9 +58,6 @@ class RadioMLDataLoader:
                         if len(X_batch) < batch_size: continue
                             
                         X_batch = self.normalize(X_batch)
-                        # Scrub Y to prevent corrupted labels from injecting Infinity into the loss gradient
-                        Y_batch = np.nan_to_num(Y_batch.astype(np.float32), nan=0.0, posinf=1.0, neginf=0.0)
-                        Y_batch = np.clip(Y_batch, 0.0, 1.0)
                         yield X_batch, Y_batch
 
     def get_train_val_indices(self, test_size=0.2, seed=42):

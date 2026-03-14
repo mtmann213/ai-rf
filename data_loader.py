@@ -6,10 +6,10 @@ class RadioMLDataLoader:
     def __init__(self, file_path):
         self.file_path = file_path
         self.modulations = [
-            'OOK', '4ASK', '8ASK', 'BPSK', 'QPSK', '8PSK', '16PSK', '32PSK',
-            '16APSK', '32APSK', '64APSK', '128APSK', '16QAM', '32QAM', '64QAM',
-            '128QAM', '256QAM', 'AM-SSB-WC', 'AM-SSB-SC', 'AM-DSB-WC', 'AM-DSB-SC',
-            'FM', 'GMSK', 'OQPSK'
+            '32PSK', '16APSK', '32QAM', 'FM', 'GMSK', '32APSK', 'OQPSK', '8ASK',
+            'BPSK', '8PSK', 'AM-SSB-SC', '4ASK', '16PSK', '64APSK', '128QAM',
+            '128APSK', 'AM-DSB-SC', 'AM-SSB-WC', '64QAM', 'QPSK', '256QAM',
+            'AM-DSB-WC', 'OOK', '16QAM'
         ]
 
     def normalize(self, x):

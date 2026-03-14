@@ -1,7 +1,7 @@
 # Opal Vanguard: Mission Resume & Handoff
 
-**Current Baseline:** V7.1 Event Horizon (Stability Patch)
-**Status:** Architecture finalized for absolute stability. Ready for heavy training on RTX 3080 Ti.
+**Current Baseline:** V7.2 Event Horizon (Label Alignment)
+**Status:** Architecture and labels finalized. Ready for final heavy training on RTX 3080 Ti.
 
 ---
 
@@ -25,7 +25,7 @@ sudo docker logs -f opal-vanguard-receiver
 ```
 
 ## 2. Active File Map
-*   `data_loader.py`: **V7.1 Engine.** Uses Soft-Clip `x/(1+|x|)` scaling + Label Scrubbing for absolute stability.
+*   `data_loader.py`: **V7.2 Engine.** Uses Soft-Clip scaling + Label Scrubbing + Correct 'Original' Class Mapping.
 *   `resnet_opal_vanguard.py`: **V7.1 Vessel.** 1D-ResNet with `BatchNormalization` for zero-variance protection.
 *   `train_resnet.py`: **V7.1 Pilot.** Double-clip optimizer (`clipnorm` + `clipvalue`) with XLA disabled.
 

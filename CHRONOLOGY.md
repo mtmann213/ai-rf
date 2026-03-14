@@ -20,5 +20,10 @@ This document tracks every technical decision and milestone on our journey to ma
     2. **BatchNorm Reinstated:** Swapped `LayerNormalization` back to `BatchNormalization` to eliminate the "zero-variance silence" bug.
     3. **Optimizer Refinement:** Swapped `global_clipnorm` for individual `clipnorm` to prevent float32 overflow during the global L2 sum.
 
+- **Milestone 16 (V7.2 - Label Alignment):** Discovered and fixed class index mismatch.
+    1. **Mapping Reset:** Reverted `data_loader.py` to use the 'Original' order found in `2018_01A/classes.txt` (starting with `32PSK`).
+    2. **Weights Purge:** Wiped all poisoned weights from previous runs.
+    3. **Accuracy Verification:** Confirmed accuracy climbing above random-guessing baseline immediately after alignment.
+
 ---
-**Current Status:** Event Horizon V7.1 Active. Stability verified via 800-step stress test. Ready for training.
+**Current Status:** Event Horizon V7.2 Active. Labels aligned. Training in progress.

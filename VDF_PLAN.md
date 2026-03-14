@@ -53,7 +53,11 @@ Using the 3rd USRP as an **Adversary Node** is critical.
 *   **Spectral Diversity (Frequency Sweep):**
     *   Capture samples across three distinct bands: **433 MHz** (UHF), **915 MHz** (Mid-Band), and **2.45 GHz** (ISM).
 *   **Temporal Diversity (Symbol Rate):**
-    *   Vary the **Samples Per Symbol (SPS)** across 4, 8, and 16 to ensure the ResNet is scale-invariant and can detect signals at different data rates.
+    *   Vary the **Samples Per Symbol (SPS)** across 4, 8, and 16 to ensure the ResNet is scale-invariant.
+*   **Sigma Hardening (Hardware Impairments):**
+    *   **Carrier Frequency Offset (CFO):** Intentionally offset the TX by ±5 kHz to train the AI to handle "phase spin" from uncalibrated hardware.
+    *   **Sample Clock Offset (SCO):** Inject tiny timing skews to simulate drift between the TX and RX internal oscillators.
+    *   **Pulse Shaping Variation:** Vary the filter roll-off factor (Alpha) between 0.2, 0.35, and 0.5 to ensure the AI isn't overfitted to a specific filter shape.
 
 ## 5. Development Roadmap (The "Data Factory" Branch)
 

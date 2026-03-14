@@ -35,7 +35,7 @@ def build_resnet_vanguard(input_shape, num_classes):
     # Pre-Stabilizer: Individual Signal Normalization
     # Using epsilon=0.1 as a 'mathematical shield' for zero-variance signals.
     x = layers.LayerNormalization(axis=-1, epsilon=0.1)(inputs)
-    x = layers.GaussianNoise(0.001)(x) # Force feature learning over mode collapse
+    x = layers.GaussianNoise(0.01)(x) # Force feature learning over mode collapse
     
     # Stem
     x = layers.Conv1D(64, 7, strides=2, padding='same', 

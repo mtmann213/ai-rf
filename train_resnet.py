@@ -52,7 +52,7 @@ def main():
         model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
         # DOUBLE-CLIP Optimizer: Combines Norm and Value clipping
         optimizer = tf.keras.optimizers.Adam(
-            learning_rate=0.0001, 
+            learning_rate=0.0005, 
             clipnorm=1.0,
             clipvalue=0.1
         )

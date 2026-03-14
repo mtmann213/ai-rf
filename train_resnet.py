@@ -52,11 +52,11 @@ def main():
         model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
         # DOUBLE-CLIP Optimizer: Combines Norm and Value clipping
         optimizer = tf.keras.optimizers.Adam(
-            learning_rate=0.00002, 
+            learning_rate=0.0001, 
             clipnorm=1.0,
             clipvalue=0.1
         )
-        loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
+        loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=False, label_smoothing=0.1)
         
         # Explicitly disable JIT (XLA) inside compile
         model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'], jit_compile=False)

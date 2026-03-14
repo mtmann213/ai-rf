@@ -62,7 +62,20 @@ def main():
         model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'], jit_compile=False)
     
     # 4. Callbacks
+    class StepLogger(tf.keras.callbacks.Callback):
+        def on_train_batch_end(self, batch, logs=None):
+            if batch % 100 == 0:
+                with open('step_log_v7.csv', 'a') as f:
+                    # Write header if first time
+                    if os.path.getsize('step_log_v7.csv') == 0:
+                        f.write('step,loss,accuracy\n')
+                    f.write(f"{batch},{logs['loss']:.4f},{logs['accuracy']:.4f}\n")
+
+    # Create empty log file
+    with open('step_log_v7.csv', 'w') as f: pass
+
     callbacks = [
+        StepLogger(),
         tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True),
         tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_best_only=True),
         tf.keras.callbacks.CSVLogger('training_log_v7.csv', append=True)

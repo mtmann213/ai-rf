@@ -15,4 +15,6 @@ services:
               capabilities: [gpu]
     stdin_open: true
     tty: true
+    environment:
+      - TF_XLA_FLAGS=--tf_xla_enable_xla_devices=false
     command: python3 train_resnet.py

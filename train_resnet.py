@@ -47,6 +47,15 @@ def main():
     if os.path.exists(checkpoint_path):
         print(f"Resuming V7 from checkpoint: {checkpoint_path}")
         model = tf.keras.models.load_model(checkpoint_path)
+        
+        # RE-COMPILE ON LOAD: Clears internal XLA optimizer states that cause SystemErrors
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=0.0005, 
+            clipnorm=1.0,
+            clipvalue=0.1
+        )
+        loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=False, label_smoothing=0.1)
+        model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'], jit_compile=False)
     else:
         print("Building fresh Event Horizon ResNet...")
         model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)

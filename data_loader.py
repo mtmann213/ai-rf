@@ -3,8 +3,9 @@ import numpy as np
 import tensorflow as tf
 
 class RadioMLDataLoader:
-    def __init__(self, file_path):
+    def __init__(self, file_path, num_classes=24):
         self.file_path = file_path
+        self.num_classes = num_classes
         self.modulations = [
             '32PSK', '16APSK', '32QAM', 'FM', 'GMSK', '32APSK', 'OQPSK', '8ASK',
             'BPSK', '8PSK', 'AM-SSB-SC', '4ASK', '16PSK', '64APSK', '128QAM',
@@ -46,16 +47,16 @@ class RadioMLDataLoader:
                     
                     if is_corrupted_2018:
                         # Reconstruct Y for the 2018 dataset
-                        Y_chunk = np.zeros((len(chunk_idx), len(self.modulations)), dtype=np.float32)
+                        Y_chunk = np.zeros((len(chunk_idx), self.num_classes), dtype=np.float32)
                         for idx_in_chunk, abs_idx in enumerate(chunk_idx):
                             class_idx = abs_idx // SAMPLES_PER_CLASS
                             Y_chunk[idx_in_chunk, class_idx] = 1.0
                     else:
                         # Trust the labels in the VDF file
                         Y_chunk = Y_ds[chunk_idx]
-                        # Ensure Y is correctly shaped (N, 24)
-                        if Y_chunk.shape[1] > 24:
-                            Y_chunk = Y_chunk[:, :24]
+                        # Ensure Y is correctly shaped (N, num_classes)
+                        if Y_chunk.shape[1] > self.num_classes:
+                            Y_chunk = Y_chunk[:, :self.num_classes]
                     
                     # Shuffle chunk
                     p = np.random.permutation(len(X_chunk))

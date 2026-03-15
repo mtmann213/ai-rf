@@ -32,7 +32,7 @@ def main():
     # 3. Setup Dataset
     # We'll use the basic data loader but skip the 2018 reconstruction logic
     # since torchsig_v2_industrial.h5 is fresh and correct.
-    loader = RadioMLDataLoader(TORCHSIG_DATASET)
+    loader = RadioMLDataLoader(TORCHSIG_DATASET, num_classes=NUM_CLASSES)
     # We need to manually set the modulations list for TorchSig
     from torchsig.signals.signal_lists import SIGNALS_SHARED_LIST
     loader.modulations = SIGNALS_SHARED_LIST

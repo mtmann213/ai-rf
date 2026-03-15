@@ -23,30 +23,41 @@ class RadioMLDataLoader:
         return x / (1.0 + np.abs(x))
 
     def get_generator(self, indices, batch_size=64):
-        """Turbocharged generator V7.0 (Mathematical Label Reconstruction)."""
+        """Turbocharged generator V7.7 (Hybrid Label Engine)."""
         chunk_size = 4096
         
-        # The dataset is perfectly ordered: 24 Classes * 26 SNRs * 4096 Samples
-        SAMPLES_PER_CLASS = 26 * 4096
-        
+        # Check if we are in the corrupted 2018 dataset (2.5M samples)
+        # to decide if we need reconstruction or can trust the HDF5 labels.
         with h5py.File(self.file_path, 'r') as f:
+            is_corrupted_2018 = f['X'].shape[0] > 2000000
             X_ds = f['X']
+            Y_ds = f['Y'] if not is_corrupted_2018 else None
             
-            print(f"\n[V7.6] Event Horizon Engine Active. Mathematical Label Reconstruction engaged.")
+            mode_msg = "Reconstruction" if is_corrupted_2018 else "Native Labels"
+            print(f"\n[V7.7] Event Horizon Engine Active. {mode_msg} engaged.")
+            
+            SAMPLES_PER_CLASS = 26 * 4096 # For reconstruction only
+            
             while True:
                 np.random.shuffle(indices)
                 for i in range(0, len(indices), chunk_size):
                     chunk_idx = sorted(indices[i:i+chunk_size])
                     X_chunk = X_ds[chunk_idx]
                     
-                    # Dynamically reconstruct Y labels based on the absolute index
-                    # because the HDF5 'Y' array is filled with corrupted memory values.
-                    Y_chunk = np.zeros((len(chunk_idx), len(self.modulations)), dtype=np.float32)
-                    for idx_in_chunk, abs_idx in enumerate(chunk_idx):
-                        class_idx = abs_idx // SAMPLES_PER_CLASS
-                        Y_chunk[idx_in_chunk, class_idx] = 1.0
+                    if is_corrupted_2018:
+                        # Reconstruct Y for the 2018 dataset
+                        Y_chunk = np.zeros((len(chunk_idx), len(self.modulations)), dtype=np.float32)
+                        for idx_in_chunk, abs_idx in enumerate(chunk_idx):
+                            class_idx = abs_idx // SAMPLES_PER_CLASS
+                            Y_chunk[idx_in_chunk, class_idx] = 1.0
+                    else:
+                        # Trust the labels in the VDF file
+                        Y_chunk = Y_ds[chunk_idx]
+                        # Ensure Y is correctly shaped (N, 24)
+                        if Y_chunk.shape[1] > 24:
+                            Y_chunk = Y_chunk[:, :24]
                     
-                    # Shuffle the chunk to prevent sequential bias within the batch
+                    # Shuffle chunk
                     p = np.random.permutation(len(X_chunk))
                     X_chunk = X_chunk[p]
                     Y_chunk = Y_chunk[p]
@@ -54,11 +65,8 @@ class RadioMLDataLoader:
                     for j in range(0, len(X_chunk), batch_size):
                         X_batch = X_chunk[j:j+batch_size]
                         Y_batch = Y_chunk[j:j+batch_size]
-                        
                         if len(X_batch) < batch_size: continue
-                            
-                        X_batch = self.normalize(X_batch)
-                        yield X_batch, Y_batch
+                        yield self.normalize(X_batch), Y_batch
 
     def get_train_val_indices(self, test_size=0.2, seed=42):
         with h5py.File(self.file_path, 'r') as f:

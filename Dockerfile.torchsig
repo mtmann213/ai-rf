@@ -1,0 +1,35 @@
+# Use a standard PyTorch image
+FROM pytorch/pytorch:2.2.1-cuda12.1-cudnn8-runtime
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    libhdf5-dev \
+    curl \
+    build-essential \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Force NumPy 1.x compatibility by using a virtualenv
+RUN pip install --no-cache-dir virtualenv && \
+    virtualenv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN pip install --no-cache-dir "numpy<2.0" setuptools>=62.4 wheel
+
+# Clone and install torchsig
+RUN git clone https://github.com/torchdsp/torchsig.git /opt/torchsig && \
+    cd /opt/torchsig && \
+    pip install --no-cache-dir .
+
+RUN pip install --no-cache-dir h5py matplotlib tqdm tensorflow==2.15.0
+
+# Default command
+CMD ["python3"]

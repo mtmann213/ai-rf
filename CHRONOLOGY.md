@@ -35,6 +35,12 @@ This document tracks every technical decision and milestone on our journey to ma
     2. **Mathematical Label Reconstruction:** Implemented a new engine in `data_loader.py` that ignores the HDF5 labels and reconstructs them perfectly based on the sample's mathematical index (24 classes * 26 SNRs * 4096 samples).
     3. **Operational Success:** Validation accuracy instantly jumped from 2% to **34.01%** in Epoch 1.
 
+- **Milestone 19 (V8.0 - Universal Expansion):** Established a new high-intelligence foundation using the TorchSig V2 framework.
+    1. **Universal Node Environment:** Built a unified Docker environment combining PyTorch (for data generation) and TensorFlow (for training).
+    2. **Vocabulary Expansion:** Expanded the model's modulation repertoire from 24 classes to **57 distinct modulations**, including modern standards like OFDM and spread-spectrum signals.
+    3. **Large-Scale Generation:** Synthesized a fresh 100,000-sample high-fidelity dataset (`torchsig_v2_industrial.h5`) with Stage 1 impairments.
+    4. **Surgical Weight Transfer:** Initiated training of the V8 ResNet using transferred feature-extraction intelligence from the V7 foundation.
+
 ## [Research Branch] Laptop GPU Hardware Discovery
 - **The Challenge:** Investigated why the **RTX PRO 2000 Blackwell** GPU was silent despite correct drivers.
 - **Findings:** Confirmed via custom diagnostics and research (Medium: "Misadventures in Blackwell Support") that TensorFlow 2.21 pip packages lack the **Compute Capability 12.0** kernels required for Blackwell.

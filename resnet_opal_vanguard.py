@@ -27,8 +27,7 @@ def residual_block(x, filters, kernel_size=3, stride=1):
     x = layers.Add()([x, shortcut])
     x = layers.ReLU(max_value=6.0)(x)
     return x
-
-def build_resnet_vanguard(input_shape, num_classes):
+def build_resnet_vanguard(input_shape=(1024, 2), num_classes=24):
     inputs = layers.Input(shape=input_shape)
     l2_reg = regularizers.l2(1e-4)
     
@@ -61,6 +60,6 @@ def build_resnet_vanguard(input_shape, num_classes):
     x = layers.Dropout(0.5)(x)
     
     # Logits Output
-    outputs = layers.Dense(num_classes, activation='softmax', kernel_initializer='glorot_uniform')(x)
+    outputs = layers.Dense(num_classes, activation='softmax', kernel_initializer='glorot_uniform', name=f"dense_head_{num_classes}")(x)
     
-    return models.Model(inputs=inputs, outputs=outputs, name="OpalVanguard_ResNet_V7_EventHorizon")
+    return models.Model(inputs=inputs, outputs=outputs, name=f"OpalVanguard_ResNet_V{num_classes}")

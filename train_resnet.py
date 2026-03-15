@@ -41,34 +41,31 @@ def main():
     ).prefetch(tf.data.AUTOTUNE)
     
     # 3. Model
-    checkpoint_path = 'best_resnet_v7.keras'
-    initial_epoch = 0
+    checkpoint_path = 'best_resnet_v7_weights.h5'
     
+    print("Building fresh Event Horizon ResNet...")
+    model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
+    
+    # DOUBLE-CLIP Optimizer: Combines Norm and Value clipping
+    optimizer = tf.keras.optimizers.Adam(
+        learning_rate=0.0005, 
+        clipnorm=1.0,
+        clipvalue=0.1
+    )
+    loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=False, label_smoothing=0.1)
+    
+    # Explicitly disable JIT (XLA) inside compile
+    model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'], jit_compile=False)
+
     if os.path.exists(checkpoint_path):
-        print(f"Resuming V7 from checkpoint: {checkpoint_path}")
-        model = tf.keras.models.load_model(checkpoint_path)
-        
-        # RE-COMPILE ON LOAD: Clears internal XLA optimizer states that cause SystemErrors
-        optimizer = tf.keras.optimizers.Adam(
-            learning_rate=0.0005, 
-            clipnorm=1.0,
-            clipvalue=0.1
-        )
-        loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=False, label_smoothing=0.1)
-        model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'], jit_compile=False)
-    else:
-        print("Building fresh Event Horizon ResNet...")
-        model = build_resnet_vanguard(INPUT_SHAPE, NUM_CLASSES)
-        # DOUBLE-CLIP Optimizer: Combines Norm and Value clipping
-        optimizer = tf.keras.optimizers.Adam(
-            learning_rate=0.0005, 
-            clipnorm=1.0,
-            clipvalue=0.1
-        )
-        loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=False, label_smoothing=0.1)
-        
-        # Explicitly disable JIT (XLA) inside compile
-        model.compile(optimizer=optimizer, loss=loss_fn, metrics=['accuracy'], jit_compile=False)
+        print(f"Resuming V7 weights from: {checkpoint_path}")
+        model.load_weights(checkpoint_path)
+    elif os.path.exists('best_resnet_v7.keras'):
+        print("Migrating V7 from .keras to weight-based .h5 format...")
+        legacy_model = tf.keras.models.load_model('best_resnet_v7.keras')
+        model.set_weights(legacy_model.get_weights())
+        model.save_weights(checkpoint_path)
+        print("Migration complete.")
     
     # 4. Callbacks
     class StepLogger(tf.keras.callbacks.Callback):
@@ -86,7 +83,7 @@ def main():
     callbacks = [
         StepLogger(),
         tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True),
-        tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_best_only=True),
+        tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_best_only=True, save_weights_only=True),
         tf.keras.callbacks.CSVLogger('training_log_v7.csv', append=True)
     ]
     

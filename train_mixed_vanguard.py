@@ -5,10 +5,10 @@ import h5py
 from data_loader import RadioMLDataLoader
 
 # Configuration
-VDF_DATASET = "VDF_GOLDEN_24CLASS.h5"
+VDF_DATASET = "VDF_INDUSTRIAL_TOTAL.h5"
 BASE_DATASET = "2018_01A/GOLD_XYZ_OSC.0001_1024.hdf5"
-BASE_MODEL_PATH = 'best_resnet_v7.keras'
-NEW_MODEL_PATH = 'vanguard_mixed_24class.keras'
+BASE_MODEL_PATH = 'best_resnet_v7_weights.h5'
+NEW_MODEL_PATH = 'vanguard_final_production.keras'
 CHECKPOINT_PATH = 'mixed_vdf_checkpoint.keras'
 BATCH_SIZE = 64
 LEARNING_RATE = 0.00005 
@@ -45,13 +45,18 @@ def mixed_generator(x_vdf, y_vdf, indices_vdf, loader_base, indices_base, batch_
 def main():
     print(f"Opal Vanguard: Launching V7.7.2 Bulletproof Mixed Trainer")
     
-    # 1. Load the Brain
+    # 1. Build Architecture
+    print("Building ResNet architecture...")
+    from resnet_opal_vanguard import build_resnet_vanguard
+    model = build_resnet_vanguard((1024, 2), 24)
+
+    # 2. Load the Weights
     if os.path.exists(CHECKPOINT_PATH):
         print(f"Resuming from checkpoint: {CHECKPOINT_PATH}")
-        model = tf.keras.models.load_model(CHECKPOINT_PATH)
+        model.load_weights(CHECKPOINT_PATH)
     else:
         print(f"Loading foundational weights from {BASE_MODEL_PATH}...")
-        model = tf.keras.models.load_model(BASE_MODEL_PATH)
+        model.load_weights(BASE_MODEL_PATH)
     
     for layer in model.layers:
         layer.trainable = True

@@ -1,88 +1,48 @@
-# Mission Plan: Vanguard Data Factory (VDF)
-**Objective:** Capture 500,000+ synchronized I/Q snapshots using the Hardware Trinity (3x USRP B205-mini) to create a high-fidelity, environment-aware training dataset for the `ai-rf` ResNet.
+# Mission Plan: Vanguard Data Factory (VDF) - Strategic Roadmap
 
-## 1. Modulation Requirements
-We will target the "Trinity Suite," which includes all 24 modulations from the 2018.01A dataset, plus 6 "Vanguard-Specific" classes for real-world robustness and modern standard awareness.
-
-*   **Digital PSK/APSK Suite:** BPSK, QPSK, 8PSK, 16PSK, 32PSK, 16APSK, 32APSK, 64APSK, 128APSK, OQPSK.
-*   **Quadrature (QAM) Suite:** 16QAM, 32QAM, 64QAM, 128QAM, 256QAM.
-*   **Amplitude (ASK/OOK) Suite:** OOK, 4ASK, 8ASK.
-*   **Analog Suite:** AM-SSB-WC, AM-SSB-SC, AM-DSB-WC, AM-DSB-SC, FM.
-*   **Modern Standards (Vanguard Expansion):**
-    *   **GMSK** (Used in GSM/AIS).
-    *   **OFDM** (The backbone of WiFi, LTE, and 5G).
-    *   **LoRa** (Chirp Spread Spectrum for IoT).
-    *   **FSK/GFSK** (Used in Bluetooth and industrial telemetry).
-*   **Signal Environment Classes:** 
-    *   **Pure Noise** (Capture of the local RF floor).
-    *   **Active Jamming** (Output of the BPSK-Jammer logic).
-
-## 2. Signal Construction Strategy
-To make the AI robust, the signals must be transmitted in two distinct modes:
-
-### A. Random Symbol Mode (70% of Dataset)
-*   **Purpose:** Teaches the AI the "Physics" of the modulation (the constellation shape).
-*   **Method:** Generate purely random bitstreams and map them to symbols.
-*   **Benefit:** Prevents the AI from "cheating" by learning a specific recurring data pattern.
-
-### B. Framed Packet Mode (30% of Dataset)
-*   **Purpose:** Teaches the AI the "Structure" of real radio comms.
-*   **Method:** Include standard preambles, sync words, and header structures.
-*   **Benefit:** Helps the AI identify signals even when the payload is silent or zeroed out.
-
-## 3. Environment & Interference Matrix
-Using the 3rd USRP as an **Adversary Node** is critical.
-
-*   **SNR Control:** Vary the TX gain from 0dB to 60dB to simulate distance.
-*   **The Adversary Node (USRP #3):**
-    *   **Adjacent Channel Interference:** Transmit high-power BPSK signals 1MHz away.
-    *   **In-Band Jamming:** Intermittently transmit noise bursts on top of the target.
-*   **Multipath Simulation:** Vary RX placement to capture real-world echoes.
-
-## 4. Technical Requirements & Dataset Scale
-*   **Sample Rate:** 1 Msps (Standard) or 5 Msps (High-Res).
-*   **Snapshots per Class:** 20,000 snapshots.
-*   **Snapshot Shape:** `(1024, 2)` (I and Q channels).
-*   **Total Dataset Size:** ~25GB (HDF5 format).
-*   **Storage Path:** Results stored in `data/vdf_captures/` (Ignored by Git).
-*   **Hardware Serials (The Trinity):**
-    *   **TX Node:** `3449AC1`
-    *   **RX Node:** `3457464`
-    *   **Adversary Node:** `3457480`
-*   **Synchronization (Anti-Drift):** 
-    *   Inject a **10ms Pilot Tone** (CW at offset) at the start of every modulation change. 
-    *   The Receiver must detect this tone to reset the sample counter, ensuring labels never "drift" due to network/USB lag.
-*   **Hardware Diversity:** 
-    *   Capture 50% of data via **SMA Coaxial Cables** (Clean Reference).
-    *   Capture 50% of data via **Antennas** (Real-World Multipath).
-*   **Spectral Diversity (Frequency Sweep):**
-    *   Capture samples across three distinct bands: **433 MHz** (UHF), **915 MHz** (Mid-Band), and **2.45 GHz** (ISM).
-*   **Temporal Diversity (Symbol Rate):**
-    *   Vary the **Samples Per Symbol (SPS)** across 4, 8, and 16 to ensure the ResNet is scale-invariant.
-*   **Sigma Hardening (Hardware Impairments):**
-    *   **Carrier Frequency Offset (CFO):** Intentionally offset the TX by ±5 kHz.
-    *   **Sample Clock Offset (SCO):** Inject tiny timing skews.
-    *   **Pulse Shaping Variation:** Vary filter roll-off (Alpha) between 0.2 and 0.5.
-*   **Operational Requirements:**
-    *   **Hardware Warm-up:** Dummy TX for 5 minutes before capture to stabilize oscillators.
-    *   **Inter-Burst Gaps:** Include "Signal Edges" in 10% of snapshots (signal starting/stopping mid-window).
-    *   **Ground Truth Metadata:** Every HDF5 entry must include a linked metadata record of the exact SNR, CFO, SCO, and SPS used for that specific sample.
-
-## 5. Development Roadmap (The "Data Factory" Branch)
-
-### Phase 0: The VDF Pilot (MANDATORY)
-Before the full 25GB run, perform a "Small-Scale Test Flight":
-1.  **Scope:** 2 Modulations (BPSK, FM) | 1,000 snapshots each.
-2.  **Verify:** HDF5 structure compatibility and Label Reconstruction accuracy.
-3.  **Benchmarking:** Run Stage 1 of the Acclimation Strategy on this Pilot data.
-
-### Phase 1: The Sequencer (`src/vdf_sequencer.py`)
-2.  **The Labeler (`src/vdf_labeller.py`):** Implements a hard-coded tagging engine to ensure labels are never corrupted.
-3.  **The Sionna Bridge:** Pre-calculates waveforms to ensure mathematical purity before hardware impairments are added by the radio.
+**Objective:** Transition the "Opal Vanguard" from a simple Signal Classifier to a full-stack **Cognitive Radio & Signals Intelligence (SIGINT) System.**
 
 ---
-### **Transfer Learning Integration**
-Once the VDF dataset is generated, the `ai-rf` project will perform **Transfer Learning**:
-1.  Load `best_resnet_v7.keras`.
-2.  Freeze early convolutional layers.
-3.  Fine-tune on the physical USRP data to adapt the "Simulated Brain" to the "Hardware Realities."
+
+## Phase 1: The Signal Classifier (Current Milestone: V8.5)
+**Goal:** Detect and identify the modulation type of a signal within the noise.
+
+*   **Current State:** ~57-59% accuracy using 1D-ResNet (Conv1D) on a 57-class vocabulary.
+*   **The "Anti-Stagnation" Plan (V9.0):**
+    *   **Ensemble Learning:** Integrate an **LSTM (Long Short-Term Memory)** or **1D-Transformer** layer alongside the ResNet. This allows the AI to "hear" the temporal patterns (timing/rhythm) of the signal, not just the visual spectral shapes.
+    *   **Synthetic-Real Hybrid:** Continuously mix the 500k TorchSig samples with active USRP hardware captures.
+    *   **Environmental Hardening:** Inject real-world noise floors, multipath fading, and interference into the training set.
+
+## Phase 2: Demodulation & Synchronization (V10.0)
+**Goal:** Extract the raw bitstream (1s and 0s) from the classified signal.
+
+*   **Neural Synchronization:** Implement a "Synchronization Head" in the model to detect frame headers, preambles, and seed sequences.
+*   **Adaptive Demodulation:** Use the Phase 1 classification to dynamically select and parameterize the correct demodulation algorithm (e.g., QPSK, 16QAM, GMSK).
+*   **Neural Demodulators:** Experiment with models that output Soft-bits (LLRs) directly from raw I/Q data.
+
+## Phase 3: Framing & Bitstream Analysis (V11.0)
+**Goal:** Understand the structure and protocol of the data.
+
+*   **De-Interleaving & Descrambling:** Reverse any channel coding or data whitening used by the transmitter.
+*   **Protocol Identification:** Determine if the bitstream follows a known standard (WiFi, Bluetooth, LTE, AIS) or a custom framing structure.
+*   **Packet Reconstruction:** Reassemble the bitstream into logical data packets.
+
+## Phase 4: Content Extraction & Intelligence (V12.0 - The "Grand Vision")
+**Goal:** Translate the raw bits into actionable meaning.
+
+*   **Payload Decoding:** Extract the actual message content (Audio, Text, Telemetry, Video).
+*   **Intelligence Layer:** Analyze the data for intent, metadata, and origin (Who is talking? Where are they? What is the mission?).
+*   **Cognitive Loop:** Feedback decoded information to the receiver to improve future tracking and classification of that specific signal source.
+
+---
+
+## 5. Development Roadmap: The "Data Factory" Branch
+
+### Immediate Tasks (Evening Strategy):
+1.  **V8.5 Failure Analysis:** Once the current refinement run plateaus, generate a **Confusion Matrix** for the `VDF_SPECTER_GOLDEN` dataset.
+2.  **V9.0 Architecture Sketching:** Prepare the Python code for the **CNN-LSTM Hybrid** ("Eyes + Ears" model).
+3.  **Hardware Capture (Mike):** Focus on "Gain Sweeps" and "Multipath Diversity" captures with the USRP to provide more training "nutrients."
+
+---
+**Status:** Phase 1 Refinement Active (57.1% Accuracy).
+**Tech Lead:** Mike Mann

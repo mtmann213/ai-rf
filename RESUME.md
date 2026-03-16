@@ -1,39 +1,41 @@
-# Opal Vanguard: Mission Resume & Handoff (V7.6.1)
+# Opal Vanguard: Mission Resume & Handoff (V8.5)
 
-**Current Baseline:** V7.6.1 Event Horizon (Pure Intelligence)
+**Current Baseline:** V8.5 Deep Specter Refinement (Hardware-Calibrated)
 **Distributed Node Status:** 
-*   **Desktop (Compute):** 3080 Ti Active | Primary Training Node (34% accuracy reached).
-*   **Laptop (Development):** Blackwell Research | Logic & Docs Node (CPU Training only).
+*   **Desktop (Compute):** 3080 Ti Active | Primary Training Node (Refinement Phase)
+    *   **Task:** Fine-tuning the 57-class "Radio Professor" brain on real hardware data (`VDF_SPECTER_GOLDEN.h5`).
+    *   **Milestone:** Achieved **57.13% hardware accuracy** (climbing from a 2.5% baseline).
+    *   **Strategy:** 50/50 Hybrid Mixed Training (Hardware + Simulation).
+*   **Laptop (Development):** Blackwell Research | Logic & Docs Node (CPU Research only).
 
 ---
 
 ## 1. Primary Mission Sequence (Desktop/3080 Ti)
-To pick up exactly where we left off with the most stable code:
+To monitor or resume the current refinement marathon:
 
 ```bash
-# 1. HARD RESET (Force match GitHub)
-git fetch origin main
-git reset --hard origin/main
+# 1. MONITOR PROGRESS
+docker logs -f $(docker ps -lq)
 
-# 2. SCORCH WIPE (Clear all mathematical poison)
-sudo rm -f *.keras *.csv *.h5 step_log_v7.csv
+# 2. CHECK ACCURACY WATERFALL
+cat specter_acclimation_log.csv | tail -n 20
 
-# 3. IGNITE
-sudo docker compose up --build -d
-
-# 4. VERIFY
-sudo docker logs -f opal-vanguard-receiver
-# Check for: "[V7.6] Event Horizon Engine Active."
+# 3. VERIFY HARDWARE DATA
+ls -lh VDF_SPECTER_GOLDEN.h5  # Should be ~5GB
 ```
 
-## 2. Active File Map
-*   `data_loader.py`: **V7.6.1 Engine.** Bypasses corrupted HDF5 labels with **Mathematical Label Reconstruction**.
-*   `resnet_opal_vanguard.py`: **V7.4 Vessel.** 1D-ResNet with **Time-Axis LayerNormalization** (preserving phase physics).
-*   `train_resnet.py`: **V7.6 Pilot.** High-energy optimizer (LR 0.0005) + **Softmax Anchor** + Real-Time Step Logging.
+## 2. Active File Map (V8.5 Architecture)
+*   **`train_mixed_vanguard.py`**: **V8.5 Refinement Pilot.** Hybrid generator (RAM-cached hardware + disk-streamed simulation). Optimizes at LR 0.00002.
+*   **`resnet_opal_vanguard.py`**: **V8.0 Architecture.** 1D-ResNet expanded for **57-class classification**. Uses Time-Axis Normalization for phase preservation.
+*   **`data_loader.py`**: **V7.7 Event Horizon Engine.** Features Soft-Clip Normalization (`x/(1+|x|)`) and Mathematical Label Reconstruction to bypass HDF5 corruption.
+*   **`validate_specter_golden.py`**: **Diagnostic Tool.** Provides a surgical accuracy pulse check against real USRP hardware captures.
 
-## 3. Hardware Constraint Note
-Laptop GPU (RTX PRO 2000) is currently in a "Software Hold" status. It requires TensorFlow 2.22 for native Blackwell support. Do not attempt heavy training on the laptop until then.
+## 3. Operational Critical Path (The Road to V9.0)
+1.  **Exceed 60% Accuracy:** Allow the current 100-epoch marathon to converge on the B205-mini hardware nuances.
+2.  **Failure Analysis:** Generate a confusion matrix to identify specific modulation confusion points.
+3.  **V9.0 Transition:** Implement the **CNN-LSTM Ensemble** ("Eyes + Ears") to capture temporal signal rhythms and break the current accuracy plateau.
+4.  **Phase 2 Preparation:** Start mapping the synchronization and frame-header detection logic for real-time demodulation.
 
 ---
 **Tech Lead:** Mike Mann
-**Diary Reference:** See `CHRONOLOGY.md` for the full technical evolution from V1.0 to V7.2.
+**Diary Reference:** See `CHRONOLOGY.md` for the full technical evolution from V1.0 to V8.5.

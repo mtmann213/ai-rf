@@ -26,9 +26,17 @@ def main():
     
     # 3. Setup Dataset
     loader = RadioMLDataLoader(DATASET, num_classes=NUM_CLASSES)
-    # Correct the modulation list for TorchSig
-    from torchsig.signals.signal_lists import SIGNALS_SHARED_LIST
-    loader.modulations = SIGNALS_SHARED_LIST
+    
+    # Hardcoded SIGNALS_SHARED_LIST from TorchSig to avoid dependency in training container
+    loader.modulations = [
+        'ook', '4ask', '8ask', '16ask', '32ask', '64ask', '2fsk', '2gfsk', '2msk', '2gmsk',
+        '4fsk', '4gfsk', '4msk', '4gmsk', '8fsk', '8gfsk', '8msk', '8gmsk', '16fsk', '16gfsk',
+        '16msk', '16gmsk', 'bpsk', 'qpsk', '8psk', '16psk', '32psk', '64psk', '16qam', '32qam',
+        '32qam_cross', '64qam', '128qam_cross', '256qam', '512qam_cross', '1024qam', 'ofdm-64',
+        'ofdm-72', 'ofdm-128', 'ofdm-180', 'ofdm-256', 'ofdm-300', 'ofdm-512', 'ofdm-600',
+        'ofdm-900', 'ofdm-1024', 'ofdm-1200', 'ofdm-2048', 'fm', 'am-dsb-sc', 'am-dsb',
+        'am-lsb', 'am-usb', 'lfm_data', 'lfm_radar', 'chirpss', 'tone'
+    ]
     
     train_indices, val_indices = loader.get_train_val_indices(test_size=0.05) # 25k samples for val
     

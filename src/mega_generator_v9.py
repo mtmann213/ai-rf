@@ -24,12 +24,25 @@ def generate_dataset():
     # Map class names to indices
     class_to_idx = {name: i for i, name in enumerate(SIGNALS_SHARED_LIST)}
 
-    # 2. Initialize HDF5
-    with h5py.File(OUTPUT_FILE, 'w') as f:
-        x_ds = f.create_dataset('X', (TOTAL_SAMPLES, IQ_LENGTH, 2), dtype='float32')
-        y_ds = f.create_dataset('Y', (TOTAL_SAMPLES, NUM_CLASSES), dtype='float32')
-        
-        current_idx = 0
+    # 2. Initialize or Resume HDF5
+    file_mode = 'a' if os.path.exists(OUTPUT_FILE) else 'w'
+    with h5py.File(OUTPUT_FILE, file_mode) as f:
+        if 'X' not in f:
+            x_ds = f.create_dataset('X', (TOTAL_SAMPLES, IQ_LENGTH, 2), dtype='float32')
+            y_ds = f.create_dataset('Y', (TOTAL_SAMPLES, NUM_CLASSES), dtype='float32')
+            current_idx = 0
+        else:
+            x_ds = f['X']
+            y_ds = f['Y']
+            # Find the first zero-row to resume (assuming one-hot labels)
+            # This is a heuristic: check every 1000 rows to find the end
+            print("Searching for resume point...")
+            current_idx = 0
+            for i in range(0, TOTAL_SAMPLES, 1000):
+                if np.sum(y_ds[i]) == 0:
+                    current_idx = i
+                    break
+            print(f"Resuming generation from index: {current_idx}")
 
         # Stage 1: Clean (Level 0)
         # Stage 2: Hardened (Level 2)
@@ -40,6 +53,16 @@ def generate_dataset():
             sys.stdout.flush()
             
             for class_idx, class_name in enumerate(SIGNALS_SHARED_LIST):
+                # Calculate the index range for this class in this stage
+                stage_offset = 0 if stage_name == "CLEAN" else (SAMPLES_PER_CLASS_CLEAN * NUM_CLASSES)
+                class_start_idx = stage_offset + (class_idx * samples_per_class)
+                class_end_idx = class_start_idx + samples_per_class
+                
+                # SKIP if entire class is already generated
+                if current_idx >= class_end_idx:
+                    print(f" Skipping {class_name} (Already complete).")
+                    continue
+                
                 print(f" Generating {class_name} ({class_idx+1}/{NUM_CLASSES})...")
                 sys.stdout.flush()
                 
@@ -52,10 +75,21 @@ def generate_dataset():
                 
                 it = iter(dataset)
                 
-                # Add progress bar for this class
-                pbar = tqdm(total=samples_per_class, desc=f" {class_name}", unit="samples")
+                # If we are resuming mid-class, we need to fast-forward the iterator
+                samples_to_skip = max(0, current_idx - class_start_idx)
+                if samples_to_skip > 0:
+                    print(f"  Fast-forwarding {samples_to_skip} samples...")
+                    for _ in range(samples_to_skip):
+                        try:
+                            next(it)
+                        except (StopIteration, ValueError):
+                            pass
                 
-                for _ in range(samples_per_class):
+                samples_to_generate = samples_per_class - samples_to_skip
+                pbar = tqdm(total=samples_per_class, desc=f" {class_name}", unit="samples")
+                pbar.update(samples_to_skip)
+                
+                for _ in range(samples_to_generate):
                     try:
                         try:
                             data, returned_class_name = next(it)

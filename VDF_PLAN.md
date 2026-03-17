@@ -4,70 +4,53 @@
 
 ---
 
-## I. Project Chronology & Implementation Timeline
+## I. The "Data-First" Mission (Immediate Priority)
+Before advancing the architecture, we must maximize the quality and diversity of the model's "nutrients."
 
-### Phase 1: Foundation & Baseline (COMPLETED)
-*   [x] **Sionna Integration:** Link-level simulation (AWGN).
-*   [x] **Functional API:** Fully serializable model architecture.
-*   [x] **Benchmarking:** "Waterfall" accuracy curves established.
+### 1. External Dataset Acquisition
+*   **DeepSig RadioML 2016.10B:** A larger, cleaner version of the 2016 dataset to provide more diverse baseline samples.
+*   **TorchSig High-Fidelity Augmentation:** Generate additional 1M+ samples with extreme CFO (Carrier Frequency Offset) and multipath distortion.
+*   **Public SIGINT Repositories:** Search for and integrate open-source USRP captures from the SDR community.
 
-### Phase 2: Data Engineering (COMPLETED)
-*   [x] **HDF5 Streaming:** Memory-efficient loading for 21GB datasets.
-*   [x] **Stability Engine:** Overflow-proof normalization and NaN scrubbing.
-*   [x] **Turbocharged I/O:** Chunked loading for WSL2 disk optimization.
-
-### Phase 3: Heavy Compute & ResNet (COMPLETED)
-*   [x] **ResNet Upgrade:** Advanced Residual Network implementation (57-class vocabulary).
-*   [x] **Distributed Compute:** Docker/WSL2 setup for RTX 3080 Ti.
-*   [x] **Data Integrity Breakthrough (V7.6.1):** Overcame HDF5 label corruption via Mathematical Reconstruction.
-*   [x] **The "Radio Professor" Milestone:** Achieved **15.5% accuracy** on 500,000 synthetic samples (V8.3).
-
-### Phase 4: Hardware Acclimation (IN PROGRESS - V8.5)
-*   [x] **The Generalization Gap:** Identified 2.5% accuracy drop on USRP hardware data.
-*   [x] **Super-Hybrid Training:** Implemented 50/50 mix of hardware and simulation.
-*   [x] **Hardware Breakthrough:** Jumped from 2.5% to **57.1% validation accuracy** (V8.5).
-*   [ ] **Refinement Marathon:** Complete 100 epochs on 3080 Ti with 0.00002 learning rate.
-*   [ ] **Failure Analysis:** Generate Confusion Matrix to identify hardware-specific confusion points.
+### 2. Custom Laptop Data Factory (Mike's SDR Tasks)
+*   **The "Dirty" Hardware Library:** Focus on capturing signals that the model currently fails on (4ASK, 8ASK, 64QAM).
+*   **Gain-Waterfall Series:** Capture the same modulation at 5dB increments from the floor to saturation.
+*   **Environmental Fingerprinting:** Record signals in different physical locations (Lab, Outdoor, Near EMI sources) to teach the model to ignore local interference.
 
 ---
 
-## II. Current Strategic Focus: V9.0 - Temporal Intelligence
+## II. Implementation Timeline
 
-As the V8.5 ResNet reaches its accuracy plateau, we must transition to the **CLDNN (CNN-LSTM-DNN)** architecture identified by **DeepSig/RadioML research** as the definitive "Intelligence" milestone.
+### Phase 1-3: Foundation & ResNet Evolution (COMPLETED)
+*   [x] Standardized V8.0 ResNet with 57-class vocabulary.
+*   [x] Achieved 57.1% Hardware Accuracy on B205-mini data.
 
-### The CNN-LSTM Ensemble ("Eyes + Ears")
-*   **The "Eyes" (CNN/ResNet):** Focus on the 2D geometric structure of the I/Q constellation.
-*   **The "Ears" (LSTM):** Focus on the 1D temporal rhythm and symbol-to-symbol transitions that the ResNet is currently "blind" to.
-*   **The Goal:** Break the 60% hardware accuracy mark by capturing both spatial and temporal signal signatures.
-
----
-
-## III. Future Mission Phases (V10.0 - V12.0)
-
-### Phase 10: Demodulation & Synchronization
-**Goal:** Extract the raw bitstream (1s and 0s) from the classified signal.
-*   **Neural Synchronization:** Implement "Synchronization Heads" to detect frame headers and preambles.
-*   **Adaptive Demodulation:** Use Phase 1 classification to dynamically select the correct demodulation algorithm (e.g., QPSK, 16QAM).
-
-### Phase 11: Framing & Bitstream Analysis
-**Goal:** Understand the structure and protocol of the data.
-*   **De-Interleaving/Descrambling:** Reverse channel coding or data whitening.
-*   **Protocol ID:** Determine if the bitstream follows a known standard (WiFi, Bluetooth, LTE, AIS).
-
-### Phase 12: Content Extraction (The "Grand Vision")
-**Goal:** Translate raw bits into actionable meaning.
-*   **Payload Decoding:** Extract the actual message content (Audio, Text, Telemetry).
-*   **Intelligence Layer:** Analyze data for intent, metadata, and origin.
+### Phase 4: Hardware Acclimation & V9.0 Transition (IN PROGRESS)
+*   [x] Identified 1D-ResNet visual plateau.
+*   [x] **V9.0 Ignition:** Launched CNN-LSTM Ensemble ("Eyes + Ears") to capture temporal signal rhythm.
+*   [ ] **Validation:** Break the 60% accuracy mark.
 
 ---
 
-## IV. The "Specter's Edge" Operational Roadmap
-To harden the model for field deployment, we must capture a "Dirty" real-world dataset on the laptop SDRs:
-1.  **Spatial Diversity:** NLOS (Non-Line of Sight) and Multipath (Echo) environments.
-2.  **Dynamic Range:** Capture signals from "barely audible" to "near saturation" (Gain Sweeps).
-3.  **Electronic Warfare:** Integrate jamming gauntlets (CW, Swept, Intermittent) to teach adversarial resilience.
+## III. Bleeding-Edge Potential (The Future Vision)
+
+### Phase 10: Neural Demodulation & Synchronization
+*   **Blind Demodulation:** Train models to output raw bitstreams (LLRs) directly from distorted I/Q data, bypassing traditional math.
+*   **Neural Synchronization:** AI-driven frame detection and clock recovery.
+
+### Phase 11: RF Foundation Models (Self-Supervised Learning)
+*   **The "RF-GPT" Concept:** Train a Masked Autoencoder on millions of unlabeled raw captures.
+*   **Zero-Shot Detection:** Use the foundation model to identify unknown or adversarial waveforms without specific training data.
+
+### Phase 12: Edge Deployment ("Specter-in-a-Box")
+*   **Optimization:** Use TensorRT and INT8 Quantization to shrink the V9.0 brain.
+*   **Deployment:** Field testing on NVIDIA Jetson / Mobile platforms.
+
+### Phase 13: Cognitive Electronic Warfare (EW)
+*   **Smart Jamming:** Use Reinforcement Learning to learn how to disrupt adversarial links with minimal power.
+*   **LPI/LPD:** AI-driven frequency hopping and modulation morphing to evade detection.
 
 ---
-**Status:** Phase 4 Refinement Active (57.1% Accuracy).
+**Status:** V9.0 Temporal Ignition Active.
 **Tech Lead:** Mike Mann
-**Research Reference:** DeepSig/RadioML (O'Shea et al.) - ResNet and CLDNN Benchmarks.
+**Data Nutrients:** Prioritizing USRP gain-sweeps and external dataset integration.

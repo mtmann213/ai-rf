@@ -18,8 +18,8 @@ RUN apt-get update && apt-get install -y \
 # Install specific OpenCV version and common tools
 RUN pip3 install --no-cache-dir opencv-python-headless==4.8.0.74 h5py tqdm matplotlib pandas
 
-# Install TorchSig via direct ZIP download to bypass all Git/Credential issues
-RUN wget https://github.com/m-west/torchsig/archive/refs/heads/main.zip -O torchsig.zip && \
+# Install TorchSig via direct ZIP download from the new organization URL
+RUN wget https://github.com/TorchDSP/torchsig/archive/refs/heads/main.zip -O torchsig.zip && \
     pip3 install torchsig.zip && \
     rm torchsig.zip
 

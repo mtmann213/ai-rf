@@ -101,12 +101,17 @@ This document is the official technical diary of the Opal Vanguard Neural Receiv
 
 ## Current Phase: Phase 5 - Temporal Intelligence (V9.0+)
 
-### [2026-03-16] Milestone 23: The V9.0 "Eyes + Ears" Ignition
-- **Architecture:** **CNN + LSTM Ensemble (CLDNN)**.
-- **Innovation:** Integrated a Bi-Directional LSTM layer to capture temporal signal "rhythms" alongside the ResNet's spatial "vision."
-- **Strategy:** Full-stack training from scratch to allow co-adaptation of visual and temporal feature extractors.
-- **Goal:** Break the 60% accuracy ceiling and prepare for Phase 2 (Demodulation).
+### [2026-03-17] Milestone 24: The 70% Breakthrough (V9.1)
+- **Strategy:** Specialist Refinement (Weighted Generator oversampling QAM/Analog).
+- **Result:** Achieved **76.5% Training / 72.7% Validation Accuracy**.
+- **Insight:** Successfully broke the 70% ceiling. Diagnostic analysis showed the LSTM fixed ASK and PSK confusion, but high-density QAM remains the final bottleneck.
 
 ---
-**Status:** V8.5 Active. Refinement Marathon in progress.
-**Tech Lead:** Mike Mann
+
+## Current Phase: Phase 6 - Multi-Modal Intelligence (V9.2+)
+
+### [2026-03-17] Milestone 25: V9.2 "Sovereign Eye" Ignition
+- **Architecture:** **Multi-Modal CNN-LSTM (Sovereign Eye)**.
+- **Innovation:** Dual-stream processing of raw I/Q and on-the-fly calculated Polar coordinates (Amplitude & Phase).
+- **Goal:** Solve the QAM Density problem by feeding the model direct geometric "rings" of the constellation.
+- **Status:** Ignition Active. Training from scratch to allow modality co-adaptation.

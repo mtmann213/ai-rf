@@ -11,7 +11,7 @@ BASE_DATASET = "2018_01A/GOLD_XYZ_OSC.0001_1024.hdf5"
 MODEL_PATH = 'models/vanguard_v9_ensemble_acclimated.keras'
 CHECKPOINT_PATH = 'models/v9_ensemble_checkpoint.keras'
 BATCH_SIZE = 64
-LEARNING_RATE = 0.00005 
+LEARNING_RATE = 0.00002 
 NUM_CLASSES = 57 # Expanded V8 Vocabulary
 
 def load_vdf_to_ram(file_path):
@@ -52,8 +52,11 @@ def main():
     # 1. Build V9 Architecture
     model = build_resnet_lstm_v9(input_shape=(1024, 2), num_classes=NUM_CLASSES)
     
-    # Note: We are starting V9 from scratch to allow the CNN + LSTM to co-adapt
-    # instead of forcing the LSTM on top of an already 'hardened' CNN.
+    if os.path.exists(CHECKPOINT_PATH):
+        print(f"Resuming from V9 checkpoint: {CHECKPOINT_PATH}")
+        model.load_weights(CHECKPOINT_PATH)
+    else:
+        print("Starting V9 from scratch.")
 
     # 2. Load Hardware Data into RAM
     x_vdf, y_vdf_raw = load_vdf_to_ram(VDF_DATASET)

@@ -1,41 +1,40 @@
-# Opal Vanguard: Mission Resume & Handoff (V8.5)
+# Opal Vanguard: Mission Resume & Handoff (V9.2)
 
-**Current Baseline:** V8.5 Deep Specter Refinement (Hardware-Calibrated)
+**Current Baseline:** V9.2 "Sovereign Eye" (Multi-Modal IQ + Polar)
 **Distributed Node Status:** 
-*   **Desktop (Compute):** 3080 Ti Active | Primary Training Node (Refinement Phase)
-    *   **Task:** Fine-tuning the 57-class "Radio Professor" brain on real hardware data (`VDF_SPECTER_GOLDEN.h5`).
-    *   **Milestone:** Achieved **57.13% hardware accuracy** (climbing from a 2.5% baseline).
-    *   **Strategy:** 50/50 Hybrid Mixed Training (Hardware + Simulation).
+*   **Desktop (Compute):** 3080 Ti Active | Primary Training Node (Multi-Modal Phase)
+    *   **Milestone:** Achieved **72.7% hardware accuracy** (V9.1 Specialist).
+    *   **Task:** Training the dual-stream "Sovereign Eye" model to solve QAM density.
+    *   **Strategy:** On-the-fly Polar Coordinate calculation (Amplitude/Phase) + I/Q.
 *   **Laptop (Development):** Blackwell Research | Logic & Docs Node (CPU Research only).
 
 ---
 
 ## 1. Primary Mission Sequence (Desktop/3080 Ti)
-To monitor or resume the current refinement marathon:
+To monitor the Sovereign Eye marathon:
 
 ```bash
 # 1. MONITOR PROGRESS
 docker logs -f $(docker ps -lq)
 
-# 2. CHECK ACCURACY WATERFALL
-cat specter_acclimation_log.csv | tail -n 20
+# 2. CHECK MULTI-MODAL LOGS
+cat reports/v9_sovereign_log.csv | tail -n 20
 
-# 3. VERIFY HARDWARE DATA
-ls -lh VDF_SPECTER_GOLDEN.h5  # Should be ~5GB
+# 3. VERIFY WEIGHTS
+ls -lh models/v9_sovereign_checkpoint.keras
 ```
 
-## 2. Active File Map (V8.5 Architecture)
-*   **`train_mixed_vanguard.py`**: **V8.5 Refinement Pilot.** Hybrid generator (RAM-cached hardware + disk-streamed simulation). Optimizes at LR 0.00002.
-*   **`resnet_opal_vanguard.py`**: **V8.0 Architecture.** 1D-ResNet expanded for **57-class classification**. Uses Time-Axis Normalization for phase preservation.
-*   **`data_loader.py`**: **V7.7 Event Horizon Engine.** Features Soft-Clip Normalization (`x/(1+|x|)`) and Mathematical Label Reconstruction to bypass HDF5 corruption.
-*   **`validate_specter_golden.py`**: **Diagnostic Tool.** Provides a surgical accuracy pulse check against real USRP hardware captures.
+## 2. Active File Map (V9.2 Architecture)
+*   **`src/train_v9_sovereign.py`**: **V9.2 Pilot.** Dual-input generator (IQ + Polar). Performs real-time Amplitude/Phase conversion.
+*   **`src/resnet_lstm_polar_v9.py`**: **V9.2 "Sovereign" Brain.** Dual-branch 1D-ResNet fused into a Bi-LSTM ensemble.
+*   **`src/train_v9_specialist.py`**: **V9.1 Legacy.** The weighted engine that broke the 70% barrier.
+*   **`data/VDF_SPECTER_GOLDEN.h5`**: **Primary Nutrients.** 5GB USRP B205-mini hardware snapshots.
 
-## 3. Operational Critical Path (The Road to V9.0)
-1.  **Exceed 60% Accuracy:** Allow the current 100-epoch marathon to converge on the B205-mini hardware nuances.
-2.  **Failure Analysis:** Generate a confusion matrix to identify specific modulation confusion points.
-3.  **V9.0 Transition:** Implement the **CNN-LSTM Ensemble** ("Eyes + Ears") to capture temporal signal rhythms and break the current accuracy plateau.
-4.  **Phase 2 Preparation:** Start mapping the synchronization and frame-header detection logic for real-time demodulation.
+## 3. Operational Critical Path
+1.  **Sovereign Convergence:** Allow V9.2 to run through its 50-epoch marathon to see if multi-modal features break the 75% barrier.
+2.  **SDR Specialist Capture:** Prepare for a laptop capture session focused exclusively on high-gain 32QAM and 64QAM.
+3.  **Phase 2 Demo:** Begin drafting the neural demodulator "heads" for the classified signal streams.
 
 ---
 **Tech Lead:** Mike Mann
-**Diary Reference:** See `CHRONOLOGY.md` for the full technical evolution from V1.0 to V8.5.
+**Diary Reference:** See `CHRONOLOGY.md` for the full technical evolution from V1.0 to V9.2.

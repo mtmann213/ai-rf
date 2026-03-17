@@ -1,0 +1,30 @@
+# Use a clean Ubuntu base to avoid NVIDIA's pre-polluted Python environment
+FROM ubuntu:22.04
+
+WORKDIR /app
+
+# Avoid prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-dev \
+    git \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install specific OpenCV version to avoid the DictValue attribute error
+RUN pip3 install --no-cache-dir opencv-python-headless==4.8.0.74 h5py tqdm matplotlib pandas
+
+# Clone and install TorchSig from source
+RUN git clone https://github.com/m-west/torchsig.git /opt/torchsig && \
+    cd /opt/torchsig && \
+    pip3 install .
+
+# Ensure the working directory is in the path
+ENV PYTHONPATH=/app
+
+# Default command
+CMD ["python3"]

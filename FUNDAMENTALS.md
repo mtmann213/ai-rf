@@ -13,11 +13,10 @@ Traditional RF systems rely on modular, hand-engineered blocks. **AI-Native RF**
 ### The RadioML 2018.01A Challenge
 We target 24 modulation types (Analog & Digital) across varying SNR levels (-20dB to +30dB).
 
-### Architecture: Residual Networks (ResNet)
-To process temporal I/Q data at scale, we use a **1D-ResNet**:
-*   **Skip Connections:** Allow the model to be deeper without the "Vanishing Gradient" problem.
-*   **Global Average Pooling:** Reduces parameters and prevents overfitting.
-*   **Softmax Output:** Probability distribution across all 24 classes.
+### Architecture: Residual Networks (ResNet) & CLDNN
+To process temporal I/Q data at scale, we align with the **DeepSig/RadioML (O'Shea et al.)** benchmarks:
+*   **ResNet:** Our 1D-ResNet (V8.0) is the industry-standard "Visual" backbone, providing high-SNR accuracy by learning the constellation's geometric features.
+*   **CLDNN (Convolutional Long Short-Term Deep Neural Network):** Our upcoming V9.0 roadmap integrates an **LSTM** layer alongside the ResNet. This "Eyes + Ears" ensemble mimics the state-of-the-art architectures used to capture both spatial (constellation) and temporal (symbol timing/rhythm) dependencies.
 
 ## 3. Engineering Pivots for Stability
 

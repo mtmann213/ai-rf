@@ -10,7 +10,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
-    git \
+    wget \
     libgl1-mesa-glx \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
@@ -18,9 +18,10 @@ RUN apt-get update && apt-get install -y \
 # Install specific OpenCV version and common tools
 RUN pip3 install --no-cache-dir opencv-python-headless==4.8.0.74 h5py tqdm matplotlib pandas
 
-# Install TorchSig directly from the stable GitHub main branch via pip
-# This avoids the Username prompt issue by using the direct tarball link
-RUN pip3 install --no-cache-dir git+https://github.com/m-west/torchsig.git
+# Install TorchSig via direct ZIP download to bypass all Git/Credential issues
+RUN wget https://github.com/m-west/torchsig/archive/refs/heads/main.zip -O torchsig.zip && \
+    pip3 install torchsig.zip && \
+    rm torchsig.zip
 
 # Ensure the working directory is in the path
 ENV PYTHONPATH=/app

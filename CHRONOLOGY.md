@@ -78,23 +78,34 @@ This document is the official technical diary of the Opal Vanguard Neural Receiv
 - **Unified Node:** Built a combined PyTorch/TensorFlow Docker environment.
 
 ### [2026-03-15] Milestone 20: The Deep Intelligence Marathon (V8.3)
-- **Dataset:** Synthesized a massive **500,000-sample** dataset (`VDF_DEEP_INTELLIGENCE_500K.h5`).
-- **Execution:** 50-epoch marathon on the 3080 Ti completed.
-- **Result:** Achieved **15.57% accuracy** on the expanded 57-class vocabulary (The "Radio Professor" brain).
+- **Architecture:** 1D-ResNet (Pure CNN / "Eyes").
+- **Dataset:** 500,000 Synthetic samples (TorchSig).
+- **Goal:** Establish a baseline "Radio Professor" brain for 57 modulation classes.
+- **Result:** Achieved **15.5% accuracy** on the expanded 57-class vocabulary.
+- **Takeaway:** The model mastered the "ideal" math of radio but remained "blind" to real-world hardware impairments.
 
 ### [2026-03-16] Milestone 21: Bridging the Generalization Gap (V8.4)
-- **Hurdle:** Pure synthetic brain only achieved **2.51%** accuracy on real USRP hardware data (`VDF_SPECTER_GOLDEN.h5`).
-- **Solution:** Launched **Super-Hybrid Mixed Training** (50% real hardware / 50% simulation).
+- **Architecture:** Resumed V8.3 ResNet.
+- **Dataset:** `VDF_SPECTER_GOLDEN.h5` (Real USRP hardware snapshots).
+- **Strategy:** Super-Hybrid Training (50% real hardware / 50% simulation).
 - **Result:** Rapid breakthrough, jumping from 2.5% to **47.6% hardware accuracy**.
+- **Takeaway:** Proven that the "Radio Professor" foundation could rapidly adapt to specific hardware accents (DC offset, phase noise).
+
+### [2026-03-16] Milestone 22: The High-Intensity Refinement (V8.5)
+- **Task:** Precision fine-tuning with a lower learning rate (`0.00002`).
+- **Result:** Accuracy plateaued at **57.1%**.
+- **Diagnostic Failure Analysis:** Top confusion points identified: 4ASK vs 8ASK and 32PSK vs 8PSK.
+- **Takeaway:** Reached the mathematical limit of a purely visual (CNN) learner. The "Eyes" could see the constellation cloud but couldn't "hear" the rhythm of symbol transitions.
 
 ---
 
-## Current Phase: Phase 5 - Deep Specter Refinement (V8.5+)
+## Current Phase: Phase 5 - Temporal Intelligence (V9.0+)
 
-### [2026-03-16] Milestone 23: The Strategic Shift (V9.0 Roadmap)
-- **The Observation:** V8.5 refinement has reached a 57-59% accuracy plateau with the current 1D-ResNet architecture on real-world USRP data.
-- **The Pivot:** Established a new roadmap for **V9.0 (Temporal Intelligence)**, shifting from purely visual CNN features to an ensemble of **Conv1D + LSTM**. This ensemble will enable the AI to process both the spectral shape and the temporal "rhythm" of signals.
-- **Long-term Roadmap:** Defined Phase 2-4 for end-to-end Signal Intelligence (Demodulation, Protocol Analysis, and Content Extraction).
+### [2026-03-16] Milestone 23: The V9.0 "Eyes + Ears" Ignition
+- **Architecture:** **CNN + LSTM Ensemble (CLDNN)**.
+- **Innovation:** Integrated a Bi-Directional LSTM layer to capture temporal signal "rhythms" alongside the ResNet's spatial "vision."
+- **Strategy:** Full-stack training from scratch to allow co-adaptation of visual and temporal feature extractors.
+- **Goal:** Break the 60% accuracy ceiling and prepare for Phase 2 (Demodulation).
 
 ---
 **Status:** V8.5 Active. Refinement Marathon in progress.

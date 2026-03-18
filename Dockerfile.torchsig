@@ -11,9 +11,13 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
     wget \
+    git \
     libgl1-mesa-glx \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
+
+# CRITICAL: Upgrade pip and setuptools FIRST to avoid VersionConflict
+RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel
 
 # Install specific OpenCV version and common tools
 RUN pip3 install --no-cache-dir opencv-python-headless==4.8.0.74 h5py tqdm matplotlib pandas

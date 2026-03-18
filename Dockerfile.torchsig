@@ -6,19 +6,22 @@ WORKDIR /app
 # Avoid prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies including Rust and Cargo for modern Python wheels
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
     wget \
+    curl \
     git \
     libgl1-mesa-glx \
     libglib2.0-0 \
-    rustc \
-    cargo \
     pkg-config \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# CRITICAL: Install latest Rust stable via rustup to support modern editions (like 2024)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 # CRITICAL: Upgrade pip and setuptools FIRST to avoid VersionConflict
 RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel

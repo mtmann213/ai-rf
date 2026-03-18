@@ -12,25 +12,28 @@
 ---
 
 ## 1. Primary Mission Sequence (Desktop/3080 Ti)
-To monitor the V9.4 Transfused marathon:
+To monitor the V9.4 Transfused marathon and the Data Factory:
 
 ```bash
-# 1. MONITOR RECOVERY HEARTBEAT
+# 1. MONITOR RECOVERY HEARTBEAT (GPU)
 docker logs -f $(docker ps -lq)
 
-# 2. CHECK STABILITY
+# 2. MONITOR DATA FACTORY (CPU)
+tail -f mega_gen.log
+
+# 3. CHECK STABILITY
 tail -n 20 reports/v9_specialist_sovereign_log.csv
 ```
 
 ## 2. Active File Map (V9.4 Architecture)
 *   **`src/weight_transfusion.py`**: **The Healer.** Successfully migrated feature-extractors from V9.1 to V9.4.
 *   **`src/train_v9_specialist_sovereign.py`**: **V9.4 Pilot.** Reverted to stable Dual-Source training with transfused weights.
-*   **`src/generate_specialist_nutrients.py`**: **Data Factory.** Concentrated generation of QAM/Analog problem classes.
+*   **`src/mega_generator_v9.py`**: **Stabilized Factory.** Features HDF5 flushing and cooldown sleeps to prevent corruption.
 
 ## 3. Operational Critical Path
-1.  **Resume Baseline:** Confirm that V9.4 rapidly returns to the 70% accuracy mark.
-2.  **Sovereign Boost:** Observe if the addition of Polar features (Amplitude/Phase) allows the model to break the 72.7% ceiling.
-3.  **Phase 2 Demo:** Prepare the "Neural Demodulator" roadmap once the 80% mark is in sight.
+1.  **Sovereign Boost:** Observe if the addition of Polar features (Amplitude/Phase) allows the model to break the 72.7% ceiling.
+2.  **Dataset Completion:** Ensure the 1.14 Million sample "Clean Gold" dataset finishes without a freeze.
+3.  **V9.5 Scaling:** Prepare to inject the fresh 1.14M samples into the Sovereign brain once generation completes.
 
 ---
 **Tech Lead:** Mike Mann

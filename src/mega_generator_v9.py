@@ -2,6 +2,8 @@ import os
 import sys
 import h5py
 import numpy as np
+import time
+import gc
 from tqdm import tqdm
 from torchsig.utils.defaults import default_dataset
 from torchsig.signals.signal_lists import SIGNALS_SHARED_LIST
@@ -15,31 +17,18 @@ OUTPUT_FILE = "data/VDF_MEGA_SYNTHETIC_1M.h5"
 IQ_LENGTH = 1024
 
 def generate_dataset():
-    print(f"Opal Vanguard: Initiating full Mega-TorchSig Expansion (Target: {TOTAL_SAMPLES} samples)")
+    print(f"Opal Vanguard: Initiating Stabilized Mega-TorchSig Factory")
+    print(f"Target: 1.14 Million Samples | 57 Classes | Level 0 & 2.")
     sys.stdout.flush()
     
     os.makedirs("data", exist_ok=True)
     class_to_idx = {name: i for i, name in enumerate(SIGNALS_SHARED_LIST)}
 
-    # Initialize or Resume
-    file_mode = 'a' if os.path.exists(OUTPUT_FILE) else 'w'
-    with h5py.File(OUTPUT_FILE, file_mode) as f:
-        if 'X' not in f:
-            print("Creating fresh HDF5 structure...")
-            x_ds = f.create_dataset('X', (TOTAL_SAMPLES, IQ_LENGTH, 2), dtype='float32')
-            y_ds = f.create_dataset('Y', (TOTAL_SAMPLES, NUM_CLASSES), dtype='float32')
-            current_idx = 0
-        else:
-            x_ds = f['X']
-            y_ds = f['Y']
-            print("Searching for resume point...")
-            # Heuristic check to find the first empty row
-            current_idx = 0
-            for i in range(0, TOTAL_SAMPLES, 1000):
-                if np.sum(y_ds[i]) == 0:
-                    current_idx = i
-                    break
-            print(f"Resuming generation from global index: {current_idx}")
+    # Fresh write for the overnight marathon
+    with h5py.File(OUTPUT_FILE, 'w') as f:
+        x_ds = f.create_dataset('X', (TOTAL_SAMPLES, IQ_LENGTH, 2), dtype='float32')
+        y_ds = f.create_dataset('Y', (TOTAL_SAMPLES, NUM_CLASSES), dtype='float32')
+        current_idx = 0
 
         for stage_name, samples_per_class, level in [("CLEAN", SAMPLES_PER_CLASS_CLEAN, 0), 
                                                      ("HARDENED", SAMPLES_PER_CLASS_HARD, 2)]:
@@ -47,15 +36,6 @@ def generate_dataset():
             sys.stdout.flush()
             
             for class_idx, class_name in enumerate(SIGNALS_SHARED_LIST):
-                # Class tracking
-                stage_offset = 0 if stage_name == "CLEAN" else (SAMPLES_PER_CLASS_CLEAN * NUM_CLASSES)
-                class_start_idx = stage_offset + (class_idx * samples_per_class)
-                class_end_idx = class_start_idx + samples_per_class
-                
-                if current_idx >= class_end_idx:
-                    # Skip already completed classes
-                    continue
-                
                 print(f" Generating {class_name} ({class_idx+1}/{NUM_CLASSES})...")
                 sys.stdout.flush()
                 
@@ -67,26 +47,14 @@ def generate_dataset():
                 )
                 
                 it = iter(dataset)
-                
-                # Fast-forward if resuming mid-class
-                samples_to_skip = max(0, current_idx - class_start_idx)
-                if samples_to_skip > 0:
-                    print(f"  Fast-forwarding {samples_to_skip} samples...")
-                    for _ in range(samples_to_skip):
-                        try: next(it)
-                        except: pass
-                
-                samples_to_gen = samples_per_class - samples_to_skip
                 pbar = tqdm(total=samples_per_class, desc=f" {class_name}", unit="samples")
-                pbar.update(samples_to_skip)
                 
-                for _ in range(samples_to_gen):
+                for _ in range(samples_per_class):
                     try:
                         try:
-                            data, returned_class_name = next(it)
+                            data, _ = next(it)
                         except ValueError:
                             data = np.zeros(IQ_LENGTH, dtype=np.complex64)
-                            returned_class_name = class_name
                         
                         if len(data) > IQ_LENGTH: data = data[:IQ_LENGTH]
                         elif len(data) < IQ_LENGTH: data = np.pad(data, (0, IQ_LENGTH - len(data)), 'constant')
@@ -105,6 +73,14 @@ def generate_dataset():
                     except StopIteration:
                         break
                 pbar.close()
+                
+                # STABILITY HOOKS:
+                f.flush()
+                del dataset
+                del it
+                gc.collect()
+                time.sleep(5) # Shorter cooldown for large run
+                sys.stdout.flush()
 
     print(f"\nMission Success: Full Mega-Dataset saved to {OUTPUT_FILE}")
     sys.stdout.flush()

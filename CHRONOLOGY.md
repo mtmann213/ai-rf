@@ -110,8 +110,12 @@ This document is the official technical diary of the Opal Vanguard Neural Receiv
 
 ## Current Phase: Phase 6 - Multi-Modal Intelligence (V9.2+)
 
-### [2026-03-17] Milestone 25: V9.2 "Sovereign Eye" Ignition
-- **Architecture:** **Multi-Modal CNN-LSTM (Sovereign Eye)**.
-- **Innovation:** Dual-stream processing of raw I/Q and on-the-fly calculated Polar coordinates (Amplitude & Phase).
-- **Goal:** Solve the QAM Density problem by feeding the model direct geometric "rings" of the constellation.
-- **Status:** Ignition Active. Training from scratch to allow modality co-adaptation.
+### [2026-03-17] Milestone 26: The "Triple-Source" Regression (V9.3)
+- **Problem:** Attempted to mix 50% hardware, 25% clean gold sim, and 25% physics baseline from scratch.
+- **Result:** Severe regression; accuracy collapsed to **51%** as gradients from diverse noise sources clashed.
+- **Takeaway:** Multi-modal architectures are too complex to start from scratch with high-entropy data mixes.
+
+### [2026-03-18] Milestone 27: Surgical Weight Transfusion (V9.4)
+- **Innovation:** Built `src/weight_transfusion.py` to surgically migrate 16 critical layers from the 72.7% Specialist model into the new Sovereign architecture.
+- **Strategy:** Warm-started the Sovereign Eye with proven V9.1 knowledge. Reverted to stable Dual-Source (Hardware + Simulation) strategy.
+- **Goal:** Focus the multi-modal brain exclusively on learning Polar (Amplitude/Phase) features to solve QAM density.

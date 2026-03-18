@@ -1,40 +1,37 @@
-# Opal Vanguard: Mission Resume & Handoff (V9.2)
+# Opal Vanguard: Mission Resume & Handoff (V9.4)
 
-**Current Baseline:** V9.2 "Sovereign Eye" (Multi-Modal IQ + Polar)
+**Current Baseline:** V9.4 Transfused Specialist (Recovery Phase)
 **Distributed Node Status:** 
-*   **Desktop (Compute):** 3080 Ti Active | Primary Training Node (Multi-Modal Phase)
-    *   **Milestone:** Achieved **72.7% hardware accuracy** (V9.1 Specialist).
-    *   **Task:** Training the dual-stream "Sovereign Eye" model to solve QAM density.
-    *   **Strategy:** On-the-fly Polar Coordinate calculation (Amplitude/Phase) + I/Q.
-*   **Laptop (Development):** Blackwell Research | Logic & Docs Node (CPU Research only).
+*   **Desktop (Compute):** 3080 Ti Active | Primary Training Node (Recovery/Refinement)
+    *   **Milestone:** Recovered from V9.3 regression via **Surgical Weight Transfusion**.
+    *   **Foundation:** Warm-started from 72.7% V9.1 Specialist weights.
+    *   **Task:** Training the Sovereign Eye (Multi-modal) on 50/50 Dual-Source data.
+*   **Laptop (Development):** Nutrient Factory | Data Generation Node.
+    *   **Task:** Generating **250,000 Specialist Nutrients** (Fatal 7 classes) for tomorrow's injection.
 
 ---
 
 ## 1. Primary Mission Sequence (Desktop/3080 Ti)
-To monitor the Sovereign Eye marathon:
+To monitor the V9.4 Transfused marathon:
 
 ```bash
-# 1. MONITOR PROGRESS
+# 1. MONITOR RECOVERY HEARTBEAT
 docker logs -f $(docker ps -lq)
 
-# 2. CHECK MULTI-MODAL LOGS
-cat reports/v9_sovereign_log.csv | tail -n 20
-
-# 3. VERIFY WEIGHTS
-ls -lh models/v9_sovereign_checkpoint.keras
+# 2. CHECK STABILITY
+tail -n 20 reports/v9_specialist_sovereign_log.csv
 ```
 
-## 2. Active File Map (V9.2 Architecture)
-*   **`src/train_v9_sovereign.py`**: **V9.2 Pilot.** Dual-input generator (IQ + Polar). Performs real-time Amplitude/Phase conversion.
-*   **`src/resnet_lstm_polar_v9.py`**: **V9.2 "Sovereign" Brain.** Dual-branch 1D-ResNet fused into a Bi-LSTM ensemble.
-*   **`src/train_v9_specialist.py`**: **V9.1 Legacy.** The weighted engine that broke the 70% barrier.
-*   **`data/VDF_SPECTER_GOLDEN.h5`**: **Primary Nutrients.** 5GB USRP B205-mini hardware snapshots.
+## 2. Active File Map (V9.4 Architecture)
+*   **`src/weight_transfusion.py`**: **The Healer.** Successfully migrated feature-extractors from V9.1 to V9.4.
+*   **`src/train_v9_specialist_sovereign.py`**: **V9.4 Pilot.** Reverted to stable Dual-Source training with transfused weights.
+*   **`src/generate_specialist_nutrients.py`**: **Data Factory.** Concentrated generation of QAM/Analog problem classes.
 
 ## 3. Operational Critical Path
-1.  **Sovereign Convergence:** Allow V9.2 to run through its 50-epoch marathon to see if multi-modal features break the 75% barrier.
-2.  **SDR Specialist Capture:** Prepare for a laptop capture session focused exclusively on high-gain 32QAM and 64QAM.
-3.  **Phase 2 Demo:** Begin drafting the neural demodulator "heads" for the classified signal streams.
+1.  **Resume Baseline:** Confirm that V9.4 rapidly returns to the 70% accuracy mark.
+2.  **Sovereign Boost:** Observe if the addition of Polar features (Amplitude/Phase) allows the model to break the 72.7% ceiling.
+3.  **Phase 2 Demo:** Prepare the "Neural Demodulator" roadmap once the 80% mark is in sight.
 
 ---
 **Tech Lead:** Mike Mann
-**Diary Reference:** See `CHRONOLOGY.md` for the full technical evolution from V1.0 to V9.2.
+**Diary Reference:** See `CHRONOLOGY.md` for the full technical evolution from V1.0 to V9.4.

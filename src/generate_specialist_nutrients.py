@@ -8,7 +8,7 @@ from torchsig.signals.signal_lists import SIGNALS_SHARED_LIST
 
 # Configuration for Specialist Nutrients
 NUM_CLASSES = 57
-SAMPLES_PER_CLASS = 35000 # ~250k total samples
+SAMPLES_PER_CLASS = 10000 # ~70k total samples
 # The "Fatal 7" from our diagnostic reports
 TARGET_CLASSES = ['16apsk', '32qam', '64qam', '128qam_cross', '256qam', 'am-dsb', 'fm']
 TOTAL_SAMPLES = SAMPLES_PER_CLASS * len(TARGET_CLASSES)

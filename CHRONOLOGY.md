@@ -78,9 +78,11 @@ This document is the official technical diary of the Opal Vanguard Neural Receiv
 - **Strategy:** Warm-started the Sovereign Eye with proven V9.1 knowledge. 
 - **Breakthrough:** Recovered from the 51% regression and successfully resumed the push for 80%.
 
-### [2026-03-18] Milestone 28: The Stabilized Data Factory
-- **Solution:** Hardened `src/mega_generator_v9.py` with **Stability Hooks** (HDF5 flushing, manual GC, and cooldown sleeps) to survive high-intensity dual-runs.
-- **Status:** Launched the 1.14 Million sample overnight marathon.
+### [2026-03-19] Milestone 29: The 25% Breakthrough (V9.8.1)
+- **Problem:** V9.7 stagnated at 25% due to data dilution and a low learning rate.
+- **Solution:** Launched V9.8.1 with **Stabilized Breakout** (50% Specialist Nutrients / 30% Hardware General / 20% Mega-Synthetic anchor) and a higher learning rate of `0.00005`.
+- **Memory Fix:** Implemented **Disk-Streaming** for the Mega-Dataset to resolve the `free(): invalid pointer` memory crash.
+- **Result:** Successfully broke the plateau, reaching **30.8% accuracy** and climbing.
 
 ---
 **Status:** V9.4 Active. Refinement Marathon in progress.

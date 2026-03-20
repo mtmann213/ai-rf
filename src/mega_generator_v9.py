@@ -8,23 +8,23 @@ from tqdm import tqdm
 from torchsig.utils.defaults import default_dataset
 from torchsig.signals.signal_lists import SIGNALS_SHARED_LIST
 
-# Configuration
+# Configuration for the 1.14M OVERNIGHT MARATHON
 NUM_CLASSES = 57
-SAMPLES_PER_CLASS_CLEAN = 10000  # 570k samples
-SAMPLES_PER_CLASS_HARD = 10000   # 570k samples
+SAMPLES_PER_CLASS_CLEAN = 10000 
+SAMPLES_PER_CLASS_HARD = 10000  
 TOTAL_SAMPLES = (SAMPLES_PER_CLASS_CLEAN + SAMPLES_PER_CLASS_HARD) * NUM_CLASSES
 OUTPUT_FILE = "data/VDF_MEGA_SYNTHETIC_1M.h5"
 IQ_LENGTH = 1024
 
 def generate_dataset():
-    print(f"Opal Vanguard: Initiating Stabilized Mega-TorchSig Factory")
-    print(f"Target: 1.14 Million Samples | 57 Classes | Level 0 & 2.")
+    print(f"Opal Vanguard: Initiating Stabilized Mega-Factory")
+    print(f"Target: {TOTAL_SAMPLES} unique snapshots | 57 Classes | Level 0 & 2.")
     sys.stdout.flush()
     
     os.makedirs("data", exist_ok=True)
     class_to_idx = {name: i for i, name in enumerate(SIGNALS_SHARED_LIST)}
 
-    # Fresh write for the overnight marathon
+    # Using 'w' to ensure a fresh, valid HDF5 header
     with h5py.File(OUTPUT_FILE, 'w') as f:
         x_ds = f.create_dataset('X', (TOTAL_SAMPLES, IQ_LENGTH, 2), dtype='float32')
         y_ds = f.create_dataset('Y', (TOTAL_SAMPLES, NUM_CLASSES), dtype='float32')
@@ -60,7 +60,8 @@ def generate_dataset():
                         elif len(data) < IQ_LENGTH: data = np.pad(data, (0, IQ_LENGTH - len(data)), 'constant')
                         
                         iq = np.stack([np.real(data), np.imag(data)], axis=-1)
-                        iq = iq / (1.0 + np.abs(iq)) # Soft-Clip
+                        # Soft-Clip Normalization
+                        iq = iq / (1.0 + np.abs(iq)) 
                         
                         x_ds[current_idx] = iq
                         
@@ -79,7 +80,7 @@ def generate_dataset():
                 del dataset
                 del it
                 gc.collect()
-                time.sleep(5) # Shorter cooldown for large run
+                time.sleep(5) # Cooldown to ensure thermal stability
                 sys.stdout.flush()
 
     print(f"\nMission Success: Full Mega-Dataset saved to {OUTPUT_FILE}")

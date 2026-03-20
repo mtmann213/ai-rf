@@ -8,8 +8,27 @@ from sklearn.metrics import confusion_matrix
 from src.data_loader import RadioMLDataLoader
 from src.resnet_lstm_v9 import build_resnet_lstm_v9
 from src.resnet_lstm_polar_v9 import build_resnet_lstm_polar_v9
+from src.resnet_opal_vanguard import build_resnet_vanguard
 
-# Configuration
+# 57-Class Master List (V9 Model Vocabulary)
+MASTER_LIST = [
+    'ook', '4ask', '8ask', '16ask', '32ask', '64ask', '2fsk', '2gfsk', '2msk', '2gmsk',
+    '4fsk', '4gfsk', '4msk', '4gmsk', '8fsk', '8gfsk', '8msk', '8gmsk', '16fsk', '16gfsk',
+    '16msk', '16gmsk', 'bpsk', 'qpsk', '8psk', '16psk', '32psk', '64psk', '16qam', '32qam',
+    '32qam_cross', '64qam', '128qam_cross', '256qam', '512qam_cross', '1024qam', 'ofdm-64',
+    'ofdm-72', 'ofdm-128', 'ofdm-180', 'ofdm-256', 'ofdm-300', 'ofdm-512', 'ofdm-600',
+    'ofdm-900', 'ofdm-1024', 'ofdm-1200', 'ofdm-2048', 'fm', 'am-dsb-sc', 'am-dsb',
+    'am-lsb', 'am-usb', 'lfm_data', 'lfm_radar', 'chirpss', 'tone'
+]
+
+# Hardware List (Definitive order from spectrum_sentry.py)
+HARDWARE_LIST = [
+    '32PSK', '16APSK', '32QAM', 'FM', 'GMSK', '32APSK', 'OQPSK', '8ASK',
+    'BPSK', '8PSK', 'AM-SSB-SC', '4ASK', '16PSK', '64APSK', '128QAM',
+    '128APSK', 'AM-DSB-SC', 'AM-SSB-WC', '64QAM', 'QPSK', '256QAM',
+    'AM-DSB-WC', 'OOK', '16QAM'
+]
+
 DATASET = "data/VDF_SPECTER_GOLDEN.h5"
 MODELS_TO_TEST = [
     {"name": "V8.5_ResNet", "path": "models/vanguard_v8_specter_final_57pct.keras", "type": "resnet_v8"},
@@ -17,93 +36,88 @@ MODELS_TO_TEST = [
     {"name": "V9.2_Sovereign", "path": "models/vanguard_v9_sovereign_final.keras", "type": "multi_modal"},
     {"name": "V9.4_Transfused", "path": "models/v9_specialist_sovereign_checkpoint.keras", "type": "multi_modal"}
 ]
-NUM_CLASSES_MODEL = 57
-NUM_CLASSES_DATA = 24
 
-def run_evaluation(model_info, x_raw, y_raw, loader):
-    print(f"\n--- Evaluating Model: {model_info['name']} ---")
+def run_evaluation(model_info, x_raw, y_raw):
+    print(f"\n--- Evaluating: {model_info['name']} ---")
     
     # 1. Build & Load
-    from src.resnet_opal_vanguard import build_resnet_vanguard
     if model_info['type'] == "resnet_v8":
-        model = build_resnet_vanguard(num_classes=NUM_CLASSES_MODEL)
+        model = build_resnet_vanguard(num_classes=57)
     elif model_info['type'] == "iq_only":
-        model = build_resnet_lstm_v9(num_classes=NUM_CLASSES_MODEL)
+        model = build_resnet_lstm_v9(num_classes=57)
     else:
-        model = build_resnet_lstm_polar_v9(num_classes=NUM_CLASSES_MODEL)
+        model = build_resnet_lstm_polar_v9(num_classes=57)
     
-    if os.path.exists(model_info['path']):
-        model.load_weights(model_info['path'])
-        print(f" Loaded weights from {model_info['path']}")
-    else:
-        print(f" ERROR: Weights not found at {model_info['path']}")
-        return None
+    model.load_weights(model_info['path'])
 
-    # 2. Normalize & Prep Inputs
-    x_norm = loader.normalize(x_raw)
+    # 2. Prep Inputs
+    # Soft-Clip Normalization
+    x_norm = x_raw / (1.0 + np.abs(x_raw))
     
     if model_info['type'] == "multi_modal":
         i_comp, q_comp = x_norm[:, :, 0], x_norm[:, :, 1]
         amplitude = np.sqrt(i_comp**2 + q_comp**2)
-        phase = np.arctan2(q_comp, i_comp)
         amplitude = amplitude / (1.0 + np.abs(amplitude))
-        phase = phase / np.pi
+        phase = np.arctan2(q_comp, i_comp) / np.pi
         x_polar = np.stack([amplitude, phase], axis=-1)
         inputs = [x_norm, x_polar]
     else:
         inputs = x_norm
 
-    # 3. Predict & Filter to 24 Classes
-    # We only care about how well it identifies the signals that are ACTUALLY there.
+    # 3. Predict
     predictions = model.predict(inputs, batch_size=128)
+    y_pred_idx = np.argmax(predictions, axis=1)
+    y_true_hw_idx = np.argmax(y_raw, axis=1)
     
-    # Slice the predictions to only the first 24 classes before taking the argmax
-    # This forces the model to choose from the "Known Hardware" vocabulary.
-    predictions_filtered = predictions[:, :NUM_CLASSES_DATA]
-    y_pred = np.argmax(predictions_filtered, axis=1)
-    y_true = np.argmax(y_raw, axis=1)
+    # 4. CROSS-VOCABULARY MAPPING
+    # Map Hardware True labels to their Master List index
+    hw_to_master = {}
+    for i, name in enumerate(HARDWARE_LIST):
+        normalized_name = name.lower().replace("-", "").replace(" ", "")
+        # Find matching name in MASTER_LIST
+        for j, m_name in enumerate(MASTER_LIST):
+            m_normalized = m_name.lower().replace("-", "").replace(" ", "")
+            if normalized_name in m_normalized or m_normalized in normalized_name:
+                hw_to_master[i] = j
+                break
     
-    acc = np.mean(y_true == y_pred) * 100
-    print(f" Filtered Hardware Accuracy (24-class): {acc:.2f}%")
+    y_true_master_idx = np.array([hw_to_master.get(idx, -1) for idx in y_true_hw_idx])
     
-    # 4. Generate Matrix
-    cm = confusion_matrix(y_true, y_pred, labels=range(NUM_CLASSES_DATA))
+    # Only calculate accuracy for classes that exist in both lists
+    valid_mask = y_true_master_idx != -1
+    acc = np.mean(y_pred_idx[valid_mask] == y_true_master_idx[valid_mask]) * 100
+    print(f" Vocabulary-Aligned Hardware Accuracy: {acc:.2f}%")
+    
+    # 5. Confusion Matrix (Mapped to Hardware Names)
+    # Filter only samples belonging to our 24 HW classes
+    cm = confusion_matrix(y_true_hw_idx[valid_mask], 
+                          [next((k for k, v in hw_to_master.items() if v == p), 23) for p in y_pred_idx[valid_mask]], 
+                          labels=range(len(HARDWARE_LIST)))
     cm_norm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-    cm_norm = np.nan_to_num(cm_norm)
     
     return cm_norm, acc
 
 def main():
-    print(f"Opal Vanguard: Master Performance Comparison")
-    
-    # Setup Data
-    loader = RadioMLDataLoader(DATASET, num_classes=NUM_CLASSES_DATA)
     with h5py.File(DATASET, 'r') as f:
-        n_samples = f['X'].shape[0]
         sample_size = 10000
-        indices = np.random.choice(n_samples, sample_size, replace=False)
+        indices = np.random.choice(f['X'].shape[0], sample_size, replace=False)
         x_raw = f['X'][sorted(indices)]
         y_raw = f['Y'][sorted(indices)]
 
     results = []
     for model_info in MODELS_TO_TEST:
-        res = run_evaluation(model_info, x_raw, y_raw, loader)
-        if res:
+        if os.path.exists(model_info['path']):
+            res = run_evaluation(model_info, x_raw, y_raw)
             results.append((model_info['name'], res[0], res[1]))
 
-    # Plot Comparison
-    fig, axes = plt.subplots(1, len(results), figsize=(12 * len(results), 10))
-    if len(results) == 1: axes = [axes]
-    
+    # Plot
+    fig, axes = plt.subplots(1, len(results), figsize=(10 * len(results), 8))
     for i, (name, cm, acc) in enumerate(results):
-        sns.heatmap(cm, annot=False, cmap='viridis', ax=axes[i], cbar=False)
-        axes[i].set_title(f"{name} ({acc:.1f}%)")
-        axes[i].set_xlabel("Predicted")
-        axes[i].set_ylabel("True")
-        
+        sns.heatmap(cm, cmap='magma', ax=axes[i], cbar=False)
+        axes[i].set_title(f"{name}\nAlign-Acc: {acc:.1f}%")
     plt.tight_layout()
-    plt.savefig("reports/master_comparison_matrix.png")
-    print("\nSuccess: Master Comparison Matrix saved to reports/master_comparison_matrix.png")
+    plt.savefig("reports/aligned_comparison_matrix.png")
+    print("\nSUCCESS: Aligned Comparison saved to reports/aligned_comparison_matrix.png")
 
 if __name__ == "__main__":
     main()

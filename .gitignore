@@ -36,8 +36,6 @@ models/
 venv/
 ENV/
 
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
+# External Frameworks
+ChangShuoRadioData-main/
+CSRD_Framework/
